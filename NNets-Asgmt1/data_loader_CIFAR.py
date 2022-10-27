@@ -5,13 +5,7 @@
     (split dataset in test and training set and shuffle it to create
     entropy and noise)
 '''
-# *** Disclaimers ***
-# Imported CIFAR10 dataset that way because i wanted first to create noise
-# in order my initial data to not be biased and the learning to be as unbiased as possible
-# that was based also on entropy's theory.
-# Also the data load throught torchvision is faster and I have transforms library
-# so I can compose the transform i need sus
-
+# Imported CIFAR10 dataset  
 from torch.utils.data import Dataset, DataLoader
 import torchvision as tv
 import tv.transforms as transforms
@@ -20,20 +14,12 @@ import cifar10
 
 
 def load_cifar10():
+       
         # The output of torchvision datasets are PILImage images of range[0,1]. We transform them to Tensors of normalized
         # range [-1,1]
         # below is a transformer that torchvision provides and in general form is this:
 
-
-        # from torchvision import transforms as transforms
-        # transform = transforms.Compose([
-        #     transforms.RandomCrop(32, padding=4),  #crops a 32x32 patch (if it is an image) with 4 padding in the crop algorithm
-        #     transforms.RandomHorizontalFlip(),  #makes an horizontal flip with a kernel
-        #     transforms.RandomRotation((-45,45)), #makes a rotation to the image or signal
-        #     transforms.ToTensor(), #makes the array that the image is stored a Tensor
-        #     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.229, 0.224, 0.225)), #R,G,B normalization
-        # ])
-
+        # TRam
         transform = transforms.Compose(
         [transform.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
         )
@@ -55,8 +41,4 @@ def load_cifar10():
         shuffle=False, num_workers=2)
 
 
-        # class definition
-
-        classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog',
-        'dog', 'frog', 'horse', 'ship', 'truck')
-
+        return trainset,testset
