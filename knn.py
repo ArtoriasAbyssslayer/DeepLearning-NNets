@@ -29,7 +29,8 @@ def knn(k,query_sample,data,distance_function,problem_fn):
     k_neirest_neigbors = sorted_neigbor_buff[:k]
     # Get the labels of K-First entries
     
-    k_nearest_labels = [data[i][-1] for distance,i in k_neirest_neigbors]
+    #
+    k_nearest_labels = [data[index][-1] for  distance,index in k_neirest_neigbors]
     
     # Return the nearest neighbors sorted and the predicted label based on the mode or mean 
     return k_neirest_neigbors, problem_fn(k_nearest_labels)
