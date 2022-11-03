@@ -9,6 +9,8 @@
 ### Assignment 2 
 - SVM
 
+### Assignment 3 
+- Auto-Encoder
 
 ### ABSTRACT Analysis
 * Assignment 1
