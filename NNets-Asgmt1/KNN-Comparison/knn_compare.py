@@ -1,7 +1,8 @@
 from sklearn.neighbors  import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
-from sklearn.metrics import s
+from knn_generic import knn 
+from nearestClassCentroid import ncc
 
 
 
