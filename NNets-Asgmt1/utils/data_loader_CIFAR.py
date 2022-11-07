@@ -20,7 +20,7 @@ def load_cifar10():
         batch_size = 4
 
         # torchvision has its own functions to load data and it has split the CIFAR10 dataset to
-        trainset = tv.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+        trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
         # load dataset with parallel use of cpu and mix up images to create noise
         trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
 
