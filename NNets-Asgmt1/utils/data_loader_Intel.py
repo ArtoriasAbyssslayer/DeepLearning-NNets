@@ -57,3 +57,5 @@ def load_Intel():
             X_check.append(list(image_array))
             Y_check.append(classes[folder])
     return X_train,Y_train,X_test,Y_test,X_check,Y_check
+
+    

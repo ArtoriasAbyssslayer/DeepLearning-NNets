@@ -6,7 +6,9 @@ import torchvision.transforms as transform
 import numpy as np
 
                                
-
+'''
+    Back propagation algorithm to be implemented
+'''
 
 
 
