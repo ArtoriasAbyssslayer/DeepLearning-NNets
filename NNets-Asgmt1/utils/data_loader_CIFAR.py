@@ -19,19 +19,19 @@ def load_cifar10_iterators():
         # below is a transformer that torchvision provides and in general form is this:
 
         # TRam
-        transform = transforms.Compose([transform.ToTensor(),
+        transformation = transforms.Compose([transforms.ToTensor(),
                                         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 
         batch_size = 4
 
         # torchvision has its own functions to load data and it has split the CIFAR10 dataset to
-        trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+        trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transformation)
         # load dataset with parallel use of cpu and mix up images to create noise
         trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4)
 
         testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-        download=True, transform=transform)
+        download=True, transform=transformation)
         # load dataset with parrallel use of cpu and mix up images to create noise
         testloader = DataLoader(testset, batch_size=batch_size,shuffle=False, num_workers=4)
 

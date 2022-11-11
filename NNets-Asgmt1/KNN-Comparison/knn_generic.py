@@ -1,5 +1,6 @@
 from collections import Counter
 import math 
+import tqdm
 '''
     knn function
     Description : Implements K-Nearest-Neighbors algorithm from scratch
