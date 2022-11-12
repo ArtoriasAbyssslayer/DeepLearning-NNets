@@ -1,8 +1,8 @@
-# torch
-# torchvision
-# torchaudio
-# tensorflow==1.14
-# seabonrn
+torch
+torchvision
+torchaudio
+tensorflow
+seaborn
 pandas
 cifar10
 cifar10_web
