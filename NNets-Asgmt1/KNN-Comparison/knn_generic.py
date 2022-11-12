@@ -1,6 +1,7 @@
 from collections import Counter
 import math 
-import tqdm
+import numpy
+import torch
 '''
     knn function
     Description : Implements K-Nearest-Neighbors algorithm from scratch
@@ -12,14 +13,14 @@ import tqdm
     - Problem_fn: Knn can be used both for classification and regression problem but in a different way this function is 
                   responsible to define the use case.
 '''
-def knn(k,query_sample,data,distance_function,problem_fn):
+def knn_custom(k,query_sample,data,problem_fn):
     # List that stores distances and the  
     neigbor_dist_indices_buff = []
     
     
     for indx, sample in enumerate(data):        
         # Calculate the distance matrix
-        distance = distance_function(sample[:-1],query_sample)
+        distance = compute_distances(sample[:-1],query_sample[:-1])
         # Append the Neighbor-Distance Buffer
         neigbor_dist_indices_buff.append(distance,indx)
         
@@ -42,6 +43,13 @@ def knn(k,query_sample,data,distance_function,problem_fn):
 
 
 """ Euclidean Distance it implements L2 norm between 2 points """
+def compute_distances(X,query):
+    size_X = X.shape[0]
+    size_query = query.shape[0]
+    dists = numpy.zeros((size_X,size_query))
+    temp=torch.sub(X,query)
+    dists = numpy.sqrt(numpy.dot(temp.T,temp))
+    return dists
 def euclidean_distance(pointA,pointB):
     squared_distance_sum  = 0;
     for i in range(len(pointA)):
