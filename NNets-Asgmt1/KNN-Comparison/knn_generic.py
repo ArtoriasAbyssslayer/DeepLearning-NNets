@@ -20,7 +20,7 @@ def knn_custom(k,query_sample,data,problem_fn):
     
     for indx, sample in enumerate(data):        
         # Calculate the distance matrix
-        distance = compute_distances(sample[:-1],query_sample[:-1])
+        distance = compute_distances(sample[:-1],query_sample)
         # Append the Neighbor-Distance Buffer
         neigbor_dist_indices_buff.append(distance,indx)
         
@@ -48,6 +48,9 @@ def compute_distances(X,query):
     size_query = query.shape[0]
     dists = numpy.zeros((size_X,size_query))
     temp=torch.sub(X,query)
+    # for i in range(size_X):
+    #    for j in range(size_Y):
+    #       dists[i][j] = euclidean_distance(X[i],query[i])
     dists = numpy.sqrt(numpy.dot(temp.T,temp))
     return dists
 def euclidean_distance(pointA,pointB):
