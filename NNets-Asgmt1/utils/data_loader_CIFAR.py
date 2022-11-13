@@ -21,9 +21,12 @@ def load_cifar10_iterators():
         # The output of torchvision datasets are PILImage images of range[0,1]. 
         # below is a transformer that torchvision provides and in general form is this:
 
-        
+        mean, std = (0.5,), (0.5,)
         transformation = transforms.Compose([transforms.ToTensor(),
-                                        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+                                transforms.Normalize(mean, std)
+                              ])
+        # transformation = transforms.Compose([transforms.ToTensor(),
+        #                                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         
         # Batch_size is defined to set the number of data that DataLoader brings in each iteration
         batch_size = 256
