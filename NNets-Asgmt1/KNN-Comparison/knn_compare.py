@@ -1,4 +1,4 @@
-from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
+rom sklearn.neighbors import KNeighborsClassifier, NearestCentroid
 from knn_generic import knn_custom,mode
 import sys
 sys.path.append('../../NNets-Asgmt1/')
@@ -12,13 +12,10 @@ import torch
 import torchvision.utils
 import time 
 from tqdm import tqdm 
+import seaborn as sns
 # define classes in a tuple
 classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-# define images shape 
-# img_rows, img_cols = 32, 32
-# input_shape = (img_rows, img_cols, 3)
-
 loaders = load_cifar10_iterators()
 train_loader = loaders[0]
 test_loader = loaders[1]
@@ -37,16 +34,14 @@ for images,classes in train_loader:
 # Trying to record accuracy_score of sklearn.KNeighborsClassifier and custom knn with 1 to 3 Neighbors
 k_range = range(1,3)
 scores = {}
-scores2= {}
 times = {}
-times2 = {}
 scores_list = []
-scores2_list = []
 times_list = []
-times2_list = []
+
 for k in tqdm(k_range):
     for x_train,y_train in train_loader:
-        for x_test,y_test in test_loader:
+            testiter = iter(test_loader)
+            x_test,y_test = next(testiter)
             x_train = np.reshape(x_train, (x_train.shape[0], -1))
             x_test = np.reshape(x_test, (x_test.shape[0], -1))
             start1 = time.time()
@@ -59,27 +54,19 @@ for k in tqdm(k_range):
             times_list.append(times[k])
             scores[k] = accuracy_score(y_test,y_pred)
             scores_list.append(scores[k])
-            start2 = time.time()
-            x_pred2,y_pred2 = knn_custom(k,x_test,x_train,mode)
-            end2 = time.time()
-            times2[k] = end2-start2
-            print(classification_report(y_test,y_pred2))
-            times2_list.append(times2[k])
-            scores2[k] = accuracy_score(y_test,y_pred2)
-            scores2_list.append(scores2[k])
 # Classification report 
 from sklearn.metrics import confusion_matrix,ConfusionMatrixDisplay
 best_k = np.argmax(scores_list)
-best_k_generic = np.argmax(scores2_list)
 
+most_time = np.argmax(times_list)
+print("Slowest knn classifier took : {}seconds".format(times_list[most_time]))
 #after running the code above, assign to n_neighbors the best performing value
 knn_best = KNeighborsClassifier(n_neighbors=best_k)
 knn_best.fit(x_train,y_train)
 y_pred = knn.predict(x_test)
-cmat = confusion_matrix(y_test,y_pred,labels=classes)
+cmat = confusion_matrix(y_test,y_pred)
+plt.figure(0)
 disp = ConfusionMatrixDisplay(confusion_matrix=cmat,display_labels=classes)
-disp.plot(cmap=plt.cm.Reds)
-knn_best_generic = knn_custom(best_k_generic,y_test,x_test,mode)
-cmat2 = confusion_matrix(y_test,knn_best_generic.y_pred,labels=classes)
-disp2 = ConfusionMatrixDisplay(confusion_matrix=cmat2,display_labels=classes)
 disp.plot(cmap=plt.cm.Blues)
+plt.figure(3)
+sns.heatmap(cmat, annot=True)
