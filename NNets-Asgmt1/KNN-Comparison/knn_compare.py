@@ -1,4 +1,4 @@
-rom sklearn.neighbors import KNeighborsClassifier, NearestCentroid
+from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
 from knn_generic import knn_custom,mode
 import sys
 sys.path.append('../../NNets-Asgmt1/')
