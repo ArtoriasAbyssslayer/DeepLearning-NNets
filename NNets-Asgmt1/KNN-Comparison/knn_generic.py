@@ -54,7 +54,7 @@ def compute_distances(X,query):
     # for i in range(size_X):
     #    for j in range(size_query):
     #       dists[i][j] = euclidean_distance(X[i],query[i])
-    dists = numpy.sqrt(numpy.dot(temp,temp))
+    dists = numpy.sqrt(numpy.dot(temp.T,temp))
     return dists
 def euclidean_distance(pointA,pointB):
     squared_distance_sum  = 0;
