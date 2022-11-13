@@ -1,5 +1,4 @@
 from collections import Counter
-import math 
 import numpy
 import torch
 '''
@@ -15,27 +14,27 @@ import torch
 '''
 def knn_custom(k,query_sample,data,problem_fn):
     # List that stores distances and the  
-    neigbor_dist_indices_buff = []
-    
+    neighbor_dist_buff = []
+    neighbor_indeces = []
     
     for indx, sample in enumerate(data):        
         # Calculate the distance matrix
         distance = compute_distances(sample[:-1],query_sample)
-        # Append the Neighbor-Distance Buffer
-        neigbor_dist_indices_buff.append(distance,indx)
         
+        # Append the Neighbor-Distance Buffer
+        neighbor_dist_buff.append(distance)
         
     # Sort the buffer sorted(iterable,key,reverse) python provided fu
-    sorted_neigbor_buff = sorted(neigbor_dist_indices_buff)
+    sorted_neighbor_buff = numpy.sort(neighbor_dist_buff)
+    sorted_neighbor_buff = sorted_neighbor_buff[::-1]
+    k_nearest_neigbors = sorted_neighbor_buff[:k]
     
-    k_neirest_neigbors = sorted_neigbor_buff[:k]
     # Get the labels of K-First entries
-    
-    #
-    k_nearest_labels = [data[index][-1] for  distance,index in k_neirest_neigbors]
-    
+    for p in k_nearest_neigbors:
+        r = numpy.argwhere(neighbor_dist_buff==p)
+        k_nearest_labels = data[r]
     # Return the nearest neighbors sorted and the predicted label based on the mode or mean 
-    return k_neirest_neigbors, problem_fn(k_nearest_labels)
+    return k_nearest_neigbors, problem_fn(k_nearest_labels)
 
 
 
@@ -47,18 +46,22 @@ def compute_distances(X,query):
     size_X = X.shape[0]
     size_query = query.shape[0]
     dists = numpy.zeros((size_X,size_query))
-    temp=torch.sub(X,query)
+    X = X.numpy()
+    X = X[0,:,:]
+    query = query.numpy()
+    query = query[0,:,:]
+    temp=numpy.subtract(X,query)
     # for i in range(size_X):
-    #    for j in range(size_Y):
+    #    for j in range(size_query):
     #       dists[i][j] = euclidean_distance(X[i],query[i])
-    dists = numpy.sqrt(numpy.dot(temp.T,temp))
+    dists = numpy.sqrt(numpy.dot(temp,temp))
     return dists
 def euclidean_distance(pointA,pointB):
     squared_distance_sum  = 0;
     for i in range(len(pointA)):
         squared_distance_sum += (pointA[i]-pointB[i])**2
         
-    return math.sqrt(squared_distance_sum)
+    return numpy.sqrt(squared_distance_sum)
 
 """ Regression = find most common real value ~ mean val, Classification = find the most common label ~ mode """
  
