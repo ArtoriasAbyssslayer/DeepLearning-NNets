@@ -1,8 +1,7 @@
 import torch.optim as optim 
 import torch.nn as nn 
-
-def loss_function():
-    creterion = nn.CrossEntropyLoss()
+def loss_function(output, target):
+    creterion = nn.CrossEntropyLoss(out,target)
     return creterion
 
 def optimizer(net,type,lr):
