@@ -3,12 +3,30 @@ import torch.nn as nn
 import torch.nn.functional as F
 from loss_optimzer import loss_function
 torch.cuda.is_available()                         
-'''
-    Back propagation algorithm is implemented in fit function
-    after forward pass is done and we have the prediction errors as
-    tought in class.
-'''
+"""
+    This file contains some utility functions
+    needed for training and testing the network.
 
+    Also contains an ImageClassificationBaseClass
+    That is the way that was the first implemented 
+    training and testing class of the neural network.
+    
+    
+    Then I made a more complicated training script 
+    that is based on how a famous object tracking network SSD300
+    is trained. 
+    
+"""
+def adjust_learning_rate(optimizer, scale):
+    """
+    Scale learning rate by a specified factor.
+
+    :param optimizer: optimizer whose learning rate must be shrunk.
+    :param scale: factor to multiply learning rate with.
+    """
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = param_group['lr'] * scale
+    print("DECAYING learning rate.\n The new LR is %f\n" % (optimizer.param_groups[1]['lr'],))
 
 class ImageClassificationTraining(nn.Module):
     # Define training step algorithm that uses batch training and cycles through training set

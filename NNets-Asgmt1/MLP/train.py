@@ -3,18 +3,32 @@ import torch.backends.cudnn as cudnn
 import torch.utils.data
 from utils import *
 from ../utils/cuda_utils import to_device
-from loss_optimzer import loss_function,optimizer
+from loss_optimzer import loss_function,optimizer_select
 from mlp1 import SmallMLP
 from mlp2 import MediumMLP
 from mlp3 import LargeMLP
+from utils.data_loader_CIFAR import load_cifar10_iterators,imshow
 
+"""
+    This training script is based on how SSD300 
+    network is trained and has similarities with
+    caffe repository on object detection MLPs
+    
+    I am using a lot of nice concepts such as
+    - Decaying learning rate ~ In order to have a most accurate way to find the best (hopefully) local minimum of loss function
+    - Gradient clipping ~ In order to avoid exploding gradients
+    - Checkpointing ~ In order to save the model and continue training from the last saved checkpoint
+    - Cuda ~ Move the data on GPU in order to speed up training process
+    
+"""
 
 # Data parameters
 data_folder = './Datasets'  # folder with data files
 
-
-n_classes = len
-
+# Case Cifar10
+n_classes = 10
+# Case Intel 
+# n_classes = 6
 
 chackpoint = None
 batch_size = 32
@@ -88,8 +102,7 @@ def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
         # delete data from gpu 
         del predicted_labels,predicted_scores,images,labeels
         
- 
-                                                                  
+                                                             
 # Main function runs training for all epochs
 def main():
     """
@@ -101,9 +114,48 @@ def main():
     
     if checkpoint is None:
         start_epoch = 0
-        model = 
+        model = SmallMLP()
+        # initialize the optimizer with biases
+        biases = list()
+        not_biases = list()
+        
+        for name,param in model.named_parameters():
+            if len(param.size()) == 1:
+                biases.append(param)
+            else:
+                not_biases.append(param)
+        optimizer = optimizer_select(params=[{'params': biases, 'lr': 2 * lr}, {'params': not_biases}],'SGD',lr=lr)
+    else:
+        checkpoint = torch.load(checkpoint)
+        start_epoch = checkpoint['epoch'] + 1
+        print('\nLoaded checkpoint from epoch %d.\n' % start_epoch)
+        model = checkpoint['model']
+        optimizer = checkpoint['optimizer']
 
-
-
+    # Move to default device
+    model = model.to(device)
+    cirterion = loss_function().to(device)
+    
+    # Dataloaders
+        loaders_cifar = load_cifar10_iterators()
+        train_loader = loaders_cifar[0]
+        test_loader = loaders_cifar[1]
+        val_loader = loaders_cifar[2]
+        
+        # Calcualte total number of epochs to train and the epochs to decay learning rate based on adaptitive learning rate
+        epochs = iterations
+ 
+        
+        # Main Training LOOP
+        for epoch in range(start_epoch,epochs):
+            # Decay learning rate at particular epochs
+            if epochs in decay_lr_at:
+                adjust_learning_rate(optimizer,decay_lr_to)
+            
+            train_epoch(train_loader,model,criterion,optimizer,epoch)
+            
+        # Save Nnet as a checkpoint
+        save_checkpoint(epoch,model,optimizer)
+    
 if __name__ = '__main__':
     main()
