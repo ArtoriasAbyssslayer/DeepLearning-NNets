@@ -3,5 +3,5 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class DropoutNet(nn.Module):
+class DropoutMLP(nn.Module):
     def __init__ (self):

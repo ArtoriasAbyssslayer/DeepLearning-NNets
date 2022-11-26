@@ -1,8 +1,10 @@
 # This part of the code was taken from pytorch example on hot move data to GPU
 def to_device(data,device):
     "Move   tensors to chosen device"
-    if isinstance(data,(list,tuple)):
-        return [to_device(x,device) for x in data]
+    if torch.cuda.is_available():
+        torch.cuda.device(0)
+        if isinstance(data,(list,tuple)):
+            return [to_device(x,device) for x in data]
     return data.to(device,non_blocking=True)
 
 # The class below is Using Datalodaer to load the data to device with the use of above function

@@ -6,9 +6,9 @@ import torch.utils.data
 from utils import *
 from utils.cuda_utils import *
 from loss_optimzer import loss_function,optimizer_select
-from mlp1 import SmallMLP
-from mlp2 import MediumMLP
-from mlp3 import LargeMLP
+from model1 import SmallMLP
+from model2 import DropoutMLP
+from model3 import DenseMLP
 from utils.data_loader_CIFAR import load_cifar10_iterators,imshow
 
 """
@@ -65,7 +65,7 @@ def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
     losses = AverageMeter()  # backward loss counting
     
     strat = time.time()
-    for (images,labels) in enumarate(train_loader):
+    for i, (images,labels) in enumerate(train_loader):
         data_time.update(time.time() - start)
         
         # Move to default device
@@ -93,15 +93,14 @@ def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
         
         start=time.time()
         
-        # Print status messages
+        # Print status based on iterator value and print_freq (so I get for only specific iteration print status based on modulo of print_freq)
         if i % print_freq == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data Time {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch, i, len(train_loader),
-                                                                  batch_time=batch_time,,
+                                                                  batch_time=batch_time,
                                                                   data_time=data_time, loss=losses))
-        # delete data from gpu 
         del predicted_labels,predicted_scores,images,labeels
         
                                                              
