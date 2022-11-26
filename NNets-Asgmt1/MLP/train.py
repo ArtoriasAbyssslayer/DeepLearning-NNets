@@ -1,8 +1,10 @@
 import time
+import sys
+sys.path.append('..')
 import torch.backends.cudnn as cudnn
 import torch.utils.data
 from utils import *
-from ../utils/cuda_utils import to_device
+from utils.cuda_utils import *
 from loss_optimzer import loss_function,optimizer_select
 from mlp1 import SmallMLP
 from mlp2 import MediumMLP
@@ -89,7 +91,7 @@ def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
         losses.update(loss.item(),images.size(0))
         batch_time.update(time.time() - start)
         
-        start time.time()
+        start=time.time()
         
         # Print status messages
         if i % print_freq == 0:

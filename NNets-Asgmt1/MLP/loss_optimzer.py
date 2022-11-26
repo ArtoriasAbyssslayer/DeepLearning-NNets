@@ -5,12 +5,11 @@ def loss_function(output, target):
     return creterion
 
 def optimizer_select(net_params,type,lr):
-    match type:
-        case 'SGD':
-            return optim.SGD(net_params, lr=lr, momentum=0.9)
-        case 'Adam':
-            return optim.Adam(net_params, lr=lr))        
-        case 'RMSprop':
-            # define rh0 with initial value 0.9 in order to have a more robust training because past is not too much important
-            return optim.RMSprop(net_params, lr=lr,rho=0.9, eps=1e-08, weight_decay=0, momentum=0.9, centered=False)
+        switcher={
+            'SGD': optimizer = optim.SGD(net_params, lr=lr, momentum=0.9),
+            'Adam': optimizer = optim.Adam(net_params, lr=lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False),
+            'Adadelta': optimizer = optim.Adadelta(net_params, lr=lr, rho=0.9, eps=1e-06, weight_decay=0),
+            'RMSprop': optimizer = optim.RMSprop(net_params, lr=lr, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=False),
+        }
+        return switcher.get(type,"Invalid optimizer type")
             
