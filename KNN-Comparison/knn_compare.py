@@ -1,7 +1,7 @@
 from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
 from knn_generic import knn_custom,mode
 import sys
-sys.path.append('../../NNets-Asgmt1/')
+sys.path.append('../MLPClassification-NNets-Asgmt1/')
 from utils.data_loader_CIFAR import load_cifar10_iterators,imshow
 from utils.data_loader_Intel import load_Intel 
 from sklearn.metrics import classification_report,accuracy_score
