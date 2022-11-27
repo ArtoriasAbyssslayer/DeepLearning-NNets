@@ -42,8 +42,45 @@ class ImageClassificationTraining(nn.Module):
         images,labels = batch
         out = self(images)
         loss = 
+        
 
+def save_checkpoint(epoch, model, optimizer, suffix=False):
+    """
+    Save model checkpoint.
 
+    :param epoch: epoch number
+    :param model: model
+    :param optimizer: optimizer
+    :param suffix: whether to append epoch number to filename
+    """
+    state = {'epoch': epoch,
+             'model': model,
+             'optimizer': optimizer}
+    filename = 'checkpoint_mlp_classification.pth.tar'
+    if suffix:
+        filename = 'checkpoint_cifar10_epoch{}.pth.tar'.format(epoch)
+    torch.save(state, filename)
+
+class AverageMeter(object):
+    """
+    Keeps track of most recent, average, sum, and count of a metric.
+    Got it from VGG16 implementation 
+    """
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
 
 # create an back propagation algorithm function for cifar10 dataset```
 # The function should return a dictionary containing the following keys: 
