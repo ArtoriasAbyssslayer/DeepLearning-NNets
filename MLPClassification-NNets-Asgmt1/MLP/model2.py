@@ -4,7 +4,7 @@ import torch.nn.functional as F
 # Define a convolution neural network
 class NetworkBatchNorm(nn.Module):
     def __init__(self):
-        super(Network, self).__init__()
+        super(NetworkBatchNorm, self).__init__()
         
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=12, kernel_size=5, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(12)

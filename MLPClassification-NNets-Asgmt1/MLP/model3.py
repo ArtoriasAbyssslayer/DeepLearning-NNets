@@ -20,7 +20,7 @@ class DenseMLP(nn.Module):
         layer_3_out = F.relu(self.dense_2(layer_2_out))
         layer_4_out = F.relu(self.dropout_2(layer_3_out))
         layer_5_out = F.relu(self.dense_3(layer_4_out))
-        layer_6_oyt = F.relu(self.dense_4(layer_5_out))
+        layer_6_out = F.relu(self.dense_4(layer_5_out))
         layer_7_out = F.softmax(self.dense_5(layer_6_out))
         
         hidden_layers = [layer_1_out, layer_2_out, layer_3_out, layer_4_out, layer_5_out, layer_6_out, layer_7_out]
