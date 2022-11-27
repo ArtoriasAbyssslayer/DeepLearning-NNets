@@ -71,4 +71,29 @@ def eval_model(test_loader, model):
         accuracy = 100 * float(correct_count) / total_pred[classname]
         print(f'Accuracy for class: {classname:5s} is {accuracy:.1f} %')
     return correct_pred, total_pred
-            
+
+
+    # Define a more minimalistic version of evaluation
+def testAccuracy(model,testloader):
+    model.eval()
+    classes = ('plane', 'car', 'bird', 'cat',
+           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+    dataiters = load_cifar10_iterators()
+
+    test_loader = dataiters[1]
+    
+    accuracy = 0.0
+    total = 0.0
+    with torch.no_grad(): # No need to calculate gradients for testing purposes
+        for data in test_loader:
+            images, labels = data
+            # run the model on the test set to predict labels
+            outputs = model(images)
+            # the label with the highest energy will be our prediction
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            accuracy += (predicted == labels).sum().item()
+
+    # compute the accuracy over all test images
+    accuracy = (100 * accuracy / total)
+    return(accuracy)

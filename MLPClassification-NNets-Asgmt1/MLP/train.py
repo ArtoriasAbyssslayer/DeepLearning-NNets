@@ -7,10 +7,10 @@ from utils import *
 from utils.cuda_utils import *
 from loss_optimzer import loss_function,optimizer_select
 from model1 import SmallMLP
-from model2 import DropoutMLP
+from model2 import NetworkBatchNorm
 from model3 import DenseMLP
 from utils.data_loader_CIFAR import load_cifar10_iterators,imshow
-
+from trainAlgorithmUtils  import adjust_learning_rate,save_checkpoint,clip_gradient,AverageMeter,ImageClassificationTraining
 """
     This training script is based on how SSD300 
     network is trained and has similarities with

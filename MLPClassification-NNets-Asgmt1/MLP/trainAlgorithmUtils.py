@@ -45,7 +45,12 @@ class ImageClassificationTraining(nn.Module):
         loss = 
         
         
+def save_model(model):
+    path = "./saved_models/"
+    torch.save(model.state_dict(), path)
 
+
+    
 def save_checkpoint(epoch, model, optimizer, suffix=False):
     """
     Save model checkpoint.
