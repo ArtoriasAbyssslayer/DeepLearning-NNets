@@ -18,3 +18,4 @@ jupyterlab
 notebook
 scikit-learn
 scikit-learn-extra
+glob2
