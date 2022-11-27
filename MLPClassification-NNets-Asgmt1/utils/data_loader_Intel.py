@@ -3,23 +3,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os 
-import glob as gb
+import glob2 as gb
 import cv2
 
 def load_Intel():
-    DataPath = '../../Dataset/intel-image-classification/'
+    DataPath = '../../Dataset/intel-Image-classification/'
     """
         Assert that the folder contains the right data
     """
     for folder in  os.listdir(DataPath + 'seg_train') : 
-        files = gb.glob(pathname= str( DataPath +'seg_train/' + folder + '**.jpg'))
+        files = gb.glob(pathname= str( DataPath +'seg_train//' + folder + '/*.jpg'))
         print(f'For training data , found {len(files)} in folder {folder}')
     
     for folder in  os.listdir(DataPath + '/seg_test') : 
-        files = gb.glob(pathname= str( DataPath +'seg_test/' + folder + '**.jpg'))
+        files = gb.glob(pathname= str( DataPath +'seg_test//' + folder + '/*.jpg'))
         print(f'For training data , found {len(files)} in folder {folder}')
     for folder in  os.listdir(DataPath + '/seg_pred') : 
-        files = gb.glob(pathname= str( DataPath +'seg_pred/' + '**.jpg'))
+        files = gb.glob(pathname= str( DataPath +'seg_pred//' + '/*.jpg'))
         print(f'For training data , found {len(files)} in folder {folder}')
     
     X_train = []
@@ -32,7 +32,7 @@ def load_Intel():
            'sea':4,
            'street':5}
     for folder in os.listdir(DataPath + 'seg_train'):
-        files = gb.glob(pathname=str(DataPath+'seg_train/' + folder + '**.jpg'))
+        files = gb.glob(pathname=str(DataPath+'seg_train//' + folder + '/*.jpg'))
         for file in files:
             image = cv2.imread(file)
             image_array = cv2.resize(image,(size,size))
@@ -41,7 +41,7 @@ def load_Intel():
     X_test = []
     Y_test = []
     for folder in os.listdir(DataPath + 'seg_train'):
-        files = gb.glob(pathname=str(DataPath+'seg_train/' + folder + '**.jpg'))
+        files = gb.glob(pathname=str(DataPath+'seg_train//' + folder + '/*.jpg'))
         for file in files:
             image = cv2.imread(file)
             image_array = cv2.resize(image,(size,size))
@@ -50,7 +50,7 @@ def load_Intel():
     X_check = []
     Y_check = []
     for folder in os.listdir(DataPath + 'seg_train'):
-        files = gb.glob(pathname=str(DataPath+'seg_train/' + folder + '**.jpg'))
+        files = gb.glob(pathname=str(DataPath+'seg_train//' + folder + '/*.jpg'))
         for file in files:
             image = cv2.imread(file)
             image_array = cv2.resize(image,(size,size))
