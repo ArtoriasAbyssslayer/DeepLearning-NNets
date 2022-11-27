@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from loss_optimzer import loss_function
+from utils.data_loader_CIFAR import load_cifar10_iterators
 torch.cuda.is_available()                         
 """
     This file contains some utility functions
@@ -11,12 +12,24 @@ torch.cuda.is_available()
     That is the way that was the first implemented 
     training and testing class of the neural network.
     
-    
-    Then I made a more complicated training script 
-    that is based on how a famous object tracking network SSD300
-    is trained. 
+    Edit: This class is not used anymore. Instead,
+    I have a minimilastic train approach in minimalTrain.py
+    and a more comprehensive(regarding optimization tricks/methods)
+    train approach in train.py.
     
 """
+
+def clip_gradient(optimizer, grad_clip):
+    """
+    Clips gradients computed during backpropagation to avoid explosion of gradients.
+
+    :param optimizer: optimizer with the gradients to be clipped
+    :param grad_clip: clip value
+    """
+    for group in optimizer.param_groups:
+        for param in group['params']:
+            if param.grad is not None:
+                param.grad.data.clamp_(-grad_clip, grad_clip)
 def adjust_learning_rate(optimizer, scale):
     """
     Scale learning rate by a specified factor.
@@ -27,23 +40,50 @@ def adjust_learning_rate(optimizer, scale):
     for param_group in optimizer.param_groups:
         param_group['lr'] = param_group['lr'] * scale
     print("DECAYING learning rate.\n The new LR is %f\n" % (optimizer.param_groups[1]['lr'],))
+    # Define a more minimalistic version of evaluation
+def testAccuracy(model,testloader):
+    model.eval()
+    classes = ('plane', 'car', 'bird', 'cat',
+           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+    dataiters = load_cifar10_iterators()
 
-# TODO FINISH UP WITH IMAGAE CLASSIFICATION TRAINING BASE CLASS
-class ImageClassificationTraining(nn.Module):
-    # Define training step algorithm that uses batch training and cycles through training set
-    def training_step(self,batch_index,batch):
-        images,labels = batch
-        out = self(images)   # Generate predictions with self function from nn.Module
-        current_loss = loss_function(images,labels) # Calculate prediction loss 
-        return current_loss
-        
-        for i,data in enumerate(train_loader):
-    # Validation step is
-    def validation_step(self,batch):
-        images,labels = batch
-        out = self(images)
-        loss = 
-        
+    test_loader = dataiters[1]
+    
+    accuracy = 0.0
+    total = 0.0
+    with torch.no_grad(): # No need to calculate gradients for testing purposes
+        for data in test_loader:
+            images, labels = data
+            # run the model on the test set to predict labels
+            outputs = model(images)
+            # the label with the highest energy will be our prediction
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            accuracy += (predicted == labels).sum().item()
+
+    # compute the accuracy over all test images
+    accuracy = (100 * accuracy / total)
+    return(accuracy)
+class AverageMeter(object):
+    """
+    Keeps track of most recent, average, sum, and count of a metric.
+    Got it from SSD implementation 
+    """
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
         
 def save_model(model):
     path = "./saved_models/"
@@ -68,32 +108,3 @@ def save_checkpoint(epoch, model, optimizer, suffix=False):
         filename = 'checkpoint_cifar10_epoch{}.pth.tar'.format(epoch)
     torch.save(state, filename)
 
-class AverageMeter(object):
-    """
-    Keeps track of most recent, average, sum, and count of a metric.
-    Got it from SSD implementation 
-    """
-
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-# create an back propagation algorithm function for cifar10 dataset```
-# The function should return a dictionary containing the following keys: 
-# 1. training_loss: list of training loss at each epoch
-# 2. training_accuracy: list of training accuracy at each epoch
-# 3. test_loss: list of test loss at each epoch
-# 4. test_accuracy: list of test accuracy at each epoch
-# 5. epoch_time: list of epoch time at each epoch
-# 6. total_time: total time taken for training

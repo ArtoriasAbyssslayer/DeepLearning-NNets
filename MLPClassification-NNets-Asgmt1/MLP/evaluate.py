@@ -3,13 +3,14 @@ sys.path.append('..')
 from utils import accuracy
 from utils.data_loader_CIFAR import load_cifar10_iterators,imshow
 import torchvision.utils
-
+import torch
 from tqdm import tqdm
 from pprint import PrettyPrinter
 
 
 """
-    Evaluate the MLP model on the test data.
+    More comprehensive way to
+    evaluate the MLP model on the test data.
 """
 
 def eval_model(test_loader, model):
@@ -39,10 +40,10 @@ def eval_model(test_loader, model):
     total = 0
     # since we're not training, we don't need to calculate the gradients for our outputs
     with torch.no_grad():
-        for data in testloader:
+        for data in test_loader:
             images, labels = data
             # calculate outputs by running images through the network
-            outputs = net(images)
+            outputs = model(images)
             # the class with the highest energy is what we choose as prediction
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -55,9 +56,9 @@ def eval_model(test_loader, model):
 
     # again no gradients needed
     with torch.no_grad():
-        for data in testloader:
+        for data in test_loader:
             images, labels = data
-            outputs = net(images)
+            outputs = model(images)
             _, predictions = torch.max(outputs, 1)
             # collect the correct predictions for each class
             for label, prediction in zip(labels, predictions):
@@ -73,27 +74,3 @@ def eval_model(test_loader, model):
     return correct_pred, total_pred
 
 
-    # Define a more minimalistic version of evaluation
-def testAccuracy(model,testloader):
-    model.eval()
-    classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-    dataiters = load_cifar10_iterators()
-
-    test_loader = dataiters[1]
-    
-    accuracy = 0.0
-    total = 0.0
-    with torch.no_grad(): # No need to calculate gradients for testing purposes
-        for data in test_loader:
-            images, labels = data
-            # run the model on the test set to predict labels
-            outputs = model(images)
-            # the label with the highest energy will be our prediction
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            accuracy += (predicted == labels).sum().item()
-
-    # compute the accuracy over all test images
-    accuracy = (100 * accuracy / total)
-    return(accuracy)

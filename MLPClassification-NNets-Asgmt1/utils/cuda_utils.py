@@ -1,8 +1,8 @@
+import torch
+
 # Auxiliary functions to move data to GPU or device in general
 def to_device(data,device):
     "Move   tensors to chosen device"
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("The model will be runnning on: ",device)
     if isinstance(data,(list,tuple)):
         return [to_device(x,device) for x in data]
     return data.to(device,non_blocking=True)

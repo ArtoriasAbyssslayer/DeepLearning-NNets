@@ -16,7 +16,7 @@ import numpy as np
 '''
 
 
-def load_cifar10_iterators():
+def load_cifar10_iterators(data_folder='./data',batch_size=32,workers=4):
        
         # The output of torchvision datasets are PILImage images of range[0,1]. 
         # below is a transformer that torchvision provides and in general form is this:
@@ -25,23 +25,17 @@ def load_cifar10_iterators():
         transformation = transforms.Compose([transforms.ToTensor(),
                                 transforms.Normalize(mean, std)
                               ])
-        # transformation = transforms.Compose([transforms.ToTensor(),
-        #                                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-        
-        # Batch_size is defined to set the number of data that DataLoader brings in each iteration
-        batch_size = 256
-        # torchvision has its own functions to load data and torch has random split inorder to get a validation set.
-        train_set = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transformation)
-        test_set = torchvision.datasets.CIFAR10(root='./data', train=False,
+        train_set = torchvision.datasets.CIFAR10(root=data_folder, train=True, download=True, transform=transformation)
+        test_set = torchvision.datasets.CIFAR10(root=data_folder, train=False,
         download=True, transform=transformation)
         val_size = 1000
         train_size = len(train_set) - val_size
         torch.manual_seed(32)
         train_ds, val_ds = random_split(train_set, [train_size, val_size])
         # load dataset with parrallel use of cpu and mix up images to create noise
-        train_loader = DataLoader(train_ds, batch_size, shuffle=True, num_workers=4, pin_memory=True)
-        val_loader = DataLoader(val_ds, batch_size*2, num_workers=4, pin_memory=True)
-        test_loader = DataLoader(test_set, batch_size*2, num_workers=4, pin_memory=True)
+        train_loader = DataLoader(train_ds, batch_size, shuffle=True, num_workers=workers, pin_memory=True)
+        val_loader = DataLoader(val_ds, batch_size*2, num_workers=workers, pin_memory=True)
+        test_loader = DataLoader(test_set, batch_size*2, num_workers=workers, pin_memory=True)
         return train_loader, test_loader, val_loader
 def imshow(img):
     img = img/2 + 0.5  # image unnormalization
