@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.nn.Sequential as Sequential
 
 
 class DenseMLP(nn.Module):
@@ -17,13 +16,13 @@ class DenseMLP(nn.Module):
         
     def forward(self, x):
         layer_1_out = F.relu(self.dense_1(x))
-        layer_2_out = F.relu(self.dropout_1(layer_1))
-        layer_3_out = F.relu(self.dense_2(layer_2))
-        layer_4_out = F.relu(self.dropout_2(layer_3))
-        layer_5_out = F.relu(self.dense_3(layer_4))
-        layer_6_oyt = F.relu(self.dense_4(layer_5))
-        layer_7_out = F.softmax(self.dense_5(layer_6))
+        layer_2_out = F.relu(self.dropout_1(layer_1_out))
+        layer_3_out = F.relu(self.dense_2(layer_2_out))
+        layer_4_out = F.relu(self.dropout_2(layer_3_out))
+        layer_5_out = F.relu(self.dense_3(layer_4_out))
+        layer_6_oyt = F.relu(self.dense_4(layer_5_out))
+        layer_7_out = F.softmax(self.dense_5(layer_6_out))
         
         hidden_layers = [layer_1_out, layer_2_out, layer_3_out, layer_4_out, layer_5_out, layer_6_out, layer_7_out]
-        return  hidden_layers,layer_7_out
+        return layer_7_out
     

@@ -16,7 +16,7 @@ class SmallMLP(nn.Module):
     def forward(self, x):
         x = self.max_pooling(F.relu(self.conv_layer_1(x)))
         x = self.max_pooling(F.relu(self.conv_layer_2(x)))
-        x = F.relu(self.dense_1)
-        x = F.relu(self.dense_2)
-        x = F.softmax(self.dense_2)
+        x = F.relu(self.dense_1(x.view(-1,16*5*5)))
+        x = F.relu(self.dense_2(x))
+        x = F.softmax(self.dense_3(x))
         return x
