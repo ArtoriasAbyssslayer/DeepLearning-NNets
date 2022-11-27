@@ -4,7 +4,7 @@ from utils.data_loader_CIFAR import load_cifar10_iterators
 from utils.cuda_utils import DeviceDataLoader,  to_device
 import torch
 from torch.autograd import Variable
-from loss_optimzer import optimizer_select, loss_select
+from loss_optimzer import optimizer_select, loss_function
 from trainAlgorithmUtils import *
 def minimal_train(num_epochs,model):
     """
@@ -14,10 +14,10 @@ def minimal_train(num_epochs,model):
         Adaptive optimizer is not applied neither gradient clipping or other fancy 
         optimization methods that were applied in train.py
     """
-    loss_func = loss_select()
-    best_accuracy = 0.0
-    optimizer = optimizer_select(model,type='Adam',lr=0.001)
-    # buffers that will be used to store the loss and accuracy of the model
+    loss_func = loss_function
+    best_running_acc = 0.0
+    optimizer=optimizer_select(model,type='Adam',lr=0.001)
+    # buffers that will be used to store the loss and running_acc of the model
     train_losses = []
     valid_losses = []
     # Define execution to CUDA device
@@ -54,13 +54,13 @@ def minimal_train(num_epochs,model):
                       (epoch + 1, i + 1, running_loss / 1000))
                 # zero the loss
                 running_loss = 0.0
-            # compute and print the average accuracy for this epoch when tested all 10000 test images
-            accuracy = testAccuracy()
-            print('For epoch', epoch+1,'the test accuracy over the whole test set is %d %%' % (accuracy))
-            if accuracy > best_accuracy:
-                save_checkpoint(model,optimizer,epoch,accuracy)
+            # compute and print the average running_acc for this epoch when tested all 10000 test images
+            running_acc = testAccuracy()
+            print('For epoch', epoch+1,'the test running_acc over the whole test set is %d %%' % (running_acc))
+            if running_acc > best_running_acc:
+                save_checkpoint(model,optimizer,epoch,running_acc)
                 save_model()
-                best_accuracy = accuracy
+                best_running_acc = running_acc
             
             # another model evaluation method
             model.eval()
