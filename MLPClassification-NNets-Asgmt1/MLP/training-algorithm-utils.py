@@ -28,6 +28,7 @@ def adjust_learning_rate(optimizer, scale):
         param_group['lr'] = param_group['lr'] * scale
     print("DECAYING learning rate.\n The new LR is %f\n" % (optimizer.param_groups[1]['lr'],))
 
+# TODO FINISH UP WITH IMAGAE CLASSIFICATION TRAINING BASE CLASS
 class ImageClassificationTraining(nn.Module):
     # Define training step algorithm that uses batch training and cycles through training set
     def training_step(self,batch_index,batch):
@@ -42,6 +43,7 @@ class ImageClassificationTraining(nn.Module):
         images,labels = batch
         out = self(images)
         loss = 
+        
         
 
 def save_checkpoint(epoch, model, optimizer, suffix=False):
@@ -64,7 +66,7 @@ def save_checkpoint(epoch, model, optimizer, suffix=False):
 class AverageMeter(object):
     """
     Keeps track of most recent, average, sum, and count of a metric.
-    Got it from VGG16 implementation 
+    Got it from SSD implementation 
     """
 
     def __init__(self):
@@ -90,4 +92,3 @@ class AverageMeter(object):
 # 4. test_accuracy: list of test accuracy at each epoch
 # 5. epoch_time: list of epoch time at each epoch
 # 6. total_time: total time taken for training
-def backward_loss()
