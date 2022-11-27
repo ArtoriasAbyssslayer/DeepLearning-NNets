@@ -1,7 +1,7 @@
 # Deep Learning NNets Assignments Repository
 
 ### Requirements
-It is recomended to setup a conda env and install pytorch with cuda there because pytorch in python 3.11 is not supported in all operating systems tests gone through conda env in python 3.8
+It is recommended to setup a conda env and install pytorch with cuda there because pytorch in python 3.11 is not supported in all operating systems tests gone through conda env in python 3.8
 
 To do this install anaconda or miniconda 
 Run:
