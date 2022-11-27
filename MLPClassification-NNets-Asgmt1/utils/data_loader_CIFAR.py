@@ -37,6 +37,14 @@ def load_cifar10_iterators(data_folder='./data',batch_size=32,workers=4):
         val_loader = DataLoader(val_ds, batch_size*2, num_workers=workers, pin_memory=True)
         test_loader = DataLoader(test_set, batch_size*2, num_workers=workers, pin_memory=True)
         return train_loader, test_loader, val_loader
+def load_cifar10_dataset(data_folder='./data'):
+    mean, std = (0.5,), (0.5,)
+    transformation = transforms.Compose([transforms.ToTensor(),
+                                transforms.Normalize(mean, std)
+                              ])
+    train_set = torchvision.datasets.CIFAR10(root=data_folder, train=True, download=True, transform=transformation)
+    test_set = torchvision.datasets.CIFAR10(root=data_folder, train=False, download=True, transform=transformation)
+    return train_set,test_set
 def imshow(img):
     img = img/2 + 0.5  # image unnormalization
     npimg = img.numpy()

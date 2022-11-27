@@ -1,5 +1,7 @@
 KNN-Comparison/data/
 MLPClassification-NNets-Asgmt1/MLP/data/
+MLPClassification-NNets-Asgmt1/MLP/Datasets/
+
 __pycache__/
 .ipynb_checkpoints/
 *.pyc
@@ -7,3 +9,4 @@ __pycache__/
 *.pyd
 *.so
 *.dylib
+Dataset/
