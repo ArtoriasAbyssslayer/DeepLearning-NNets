@@ -18,5 +18,5 @@ class SmallMLP(nn.Module):
         x = self.max_pooling(F.relu(self.conv_layer_2(x)))
         x = F.relu(self.dense_1(x.view(-1,16*5*5)))
         x = F.relu(self.dense_2(x))
-        x = F.softmax(self.dense_3(x))
+        x = F.softmax(self.dense_3(x),dim=0)
         return x

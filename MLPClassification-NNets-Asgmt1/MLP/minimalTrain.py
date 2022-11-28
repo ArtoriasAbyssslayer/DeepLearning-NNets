@@ -1,10 +1,9 @@
 import sys
 sys.path.append("../")
 from utils.data_loader_CIFAR import load_cifar10_iterators
-from utils.cuda_utils import DeviceDataLoader,  to_device
 import torch
 from torch.autograd import Variable
-from loss_optimzer import optimizer_select, loss_function
+from loss_optimizer import optimizer_select, loss_function
 from trainAlgorithmUtils import *
 def minimal_train(num_epochs,model):
     """
@@ -16,7 +15,15 @@ def minimal_train(num_epochs,model):
     """
     loss_func = loss_function
     best_running_acc = 0.0
-    optimizer=optimizer_select(model,type='Adam',lr=0.001)
+    # initialize the optimizer with biases
+    biases = list()
+    not_biases = list()
+    for name,param in model.named_parameters():
+            if len(param.size()) == 1:
+                biases.append(param)
+            else:
+                not_biases.append(param)
+    optimizer = optimizer_select(net_params=[{'params': biases}, {'params': not_biases}],type='Adam',lr=0.0001)
     # buffers that will be used to store the loss and running_acc of the model
     train_losses = []
     valid_losses = []

@@ -1,7 +1,7 @@
 import torch 
 import torch.nn as nn
 import torch.nn.functional as F
-from loss_optimzer import loss_function
+from loss_optimizer import loss_function
 from utils.data_loader_CIFAR import load_cifar10_iterators
 torch.cuda.is_available()                         
 """
@@ -107,4 +107,3 @@ def save_checkpoint(epoch, model, optimizer, suffix=False):
     if suffix:
         filename = 'checkpoint_cifar10_epoch{}.pth.tar'.format(epoch)
     torch.save(state, filename)
-
