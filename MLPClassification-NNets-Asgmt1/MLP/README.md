@@ -1,3 +1,5 @@
+## ATTENTION 
+The jupyter notebook with full cell output is too large to render so I include one with Suppressed Output
 ### Training the models
 Training the models could be done with both minimalTraining.py or train.py.The second is a more 
 coprehensive and robust way to train the model so it is recommended.
