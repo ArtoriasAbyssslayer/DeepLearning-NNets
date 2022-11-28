@@ -1,7 +1,7 @@
 KNN-Comparison/data/
 MLPClassification-NNets-Asgmt1/MLP/data/
 MLPClassification-NNets-Asgmt1/MLP/Datasets/
-
+DeepLearning-NNets/MLPClassification-NNets-Asgmt1/MLP\checkpoint_mlp_classification.pth.tar/
 __pycache__/
 .ipynb_checkpoints/
 *.pyc

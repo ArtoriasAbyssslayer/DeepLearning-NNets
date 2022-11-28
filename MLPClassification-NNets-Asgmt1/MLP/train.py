@@ -14,6 +14,7 @@ from model2 import NetworkBatchNorm
 from model3 import DenseMLP
 import matplotlib.pyplot as plt
 from evaluate import eval_model
+from tqdm import tqdm
 import ssl
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 """
@@ -71,6 +72,7 @@ def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
         :param opimizer: optimizer
         :param epoch_num: epoch number
     """
+    n_samples = 0
     batch_time = AverageMeter()  # forward prop. + back prop. time
     data_time = AverageMeter()  # data loading time
     losses = AverageMeter()  # backward loss counting
@@ -108,20 +110,17 @@ def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
         
         # Update weights
         optimizer.step()
-        
-    # Update loss,accuracy,batchtime
-    losses.update(loss.item(),images.size(0))
-    batch_time.update(time.time() - start)
-    
-    # compute and print the average running_acc for this epoch when tested all 10000 test images
-    running_accuracies.update(accuracy, images.size(0))
-    train_losses.append(losses.avg)
-    train_acc.append(100*accuracy/n_samples)
-    start=time.time()
-    # Print status based on iterator value and print_freq (so I get for only specific iteration print status based on modulo of print_freq)
-    if i % print_freq == 0:
-        # print(predicted)
-        print('Predicted: ', ' '.join('%5s' % classes_cifar[predicted[j]]
+        start=time.time()
+        # Update loss,accuracy,batchtime
+        losses.update(loss.item(),images.size(0))
+        batch_time.update(time.time() - start)
+        # compute and print the average running_acc for this epoch when tested all 10000 test images
+        running_accuracies.update(accuracy, images.size(0))
+        train_losses.append(losses.avg)
+        train_acc.append(100*accuracy/n_samples)
+        # Print status based on iterator value and print_freq (so I get for only specific iteration print status based on modulo of print_freq)
+        if i % print_freq == 0:
+            print('Predicted: ', ' '.join('%5s' % classes_cifar[predicted[j]]
                             for j in range(1)))
         print('Epoch: [{0}][{1}/{2}]\t'
                 'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
@@ -130,7 +129,13 @@ def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
                 'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch_num, i, len(train_loader),
                                                                 batch_time=batch_time,
                                                                 data_time=data_time, accuracy=running_accuracies, loss=losses))
-    del predicted,loss,outputs,images,labels       
+    del predicted,loss,outputs,images,labels  
+        
+    
+    
+    
+   
+        
         
                                                              
 # Main function runs training for all epochs
@@ -162,6 +167,7 @@ def mainTraining(model):
             else:
                 not_biases.append(param)
         optimizer = optimizer_select(net_params=[{'params': biases}, {'params': not_biases}],type='Adam',lr=lr)
+        
     else:
         checkpoint = torch.load(checkpoint)
         start_epoch = checkpoint['epoch'] + 1
@@ -180,18 +186,18 @@ def mainTraining(model):
     decay_lr_at = [it // (len(train_dataset) // 32) for it in decay_lr_at]
     
     # Main Training LOOP
-    for epoch in range(start_epoch,epochs):
+    for epoch in tqdm(range(start_epoch,epochs)):
         # Decay learning rate at particular epochs
         if epochs in decay_lr_at:
             adjust_learning_rate(optimizer,decay_lr_to)
-        print('Loss and Accuracy Curves for epoch{}'.format(epoch))
-        running_losses,running_accuracies = train_epoch(train_loader,model,loss_function,optimizer,epoch_num=epoch)
+        
+        train_epoch(train_loader,model,loss_function,optimizer,epoch_num=epoch)
         
         # Save Nnet as a checkpoint
         save_checkpoint(epoch,model,optimizer)
     
     # Plot training curves
-    
+    print('Loss and Accuracy Curves')
     # Evaluate the model on test set 
     _,_,test_acc,test_losses=eval_model(test_loader=test_loader,model=model)
     # Plot accuracies
