@@ -15,7 +15,7 @@ class DenseMLP(nn.Module):
         self.dense_5 = nn.Linear(64, 10)
         
     def forward(self, x):
-        layer_1_out = F.relu(self.dense_1(x))
+        layer_1_out = F.relu(self.dense_1(x.view(-1, 1024)))
         layer_2_out = F.relu(self.dropout_1(layer_1_out))
         layer_3_out = F.relu(self.dense_2(layer_2_out))
         layer_4_out = F.relu(self.dropout_2(layer_3_out))

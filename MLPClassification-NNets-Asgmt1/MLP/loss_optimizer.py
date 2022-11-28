@@ -1,5 +1,4 @@
 import torch.optim as optim 
-import torch.nn as nn 
 import torch.nn.functional as F
 def loss_function(output, target):
     creterion = F.cross_entropy(output,target)

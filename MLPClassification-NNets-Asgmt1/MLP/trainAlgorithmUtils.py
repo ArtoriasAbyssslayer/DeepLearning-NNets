@@ -85,9 +85,9 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
         
-def save_model(model):
+def save_model(model,name):
     path = "./saved_models/"
-    torch.save(model.state_dict(), path)
+    torch.save(model.state_dict(), path+name)
 
 
     

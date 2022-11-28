@@ -1,6 +1,8 @@
 import time
 import os
 import sys
+import torch
+import torch.nn
 sys.path.append('..')
 import torch.backends.cudnn as cudnn
 import torch.utils.data
@@ -39,9 +41,9 @@ n_classes = 10
 # Case Intel 
 # n_classes = 6
 iterations = 120000  # number of iterations to train
-checkpoint = None
+checkpoint = None  # path to model checkpoint, None if none
 batch_size = 32
-epochs =  100
+epochs =  125
 workers = 4
 print_freq = 200
 lr = 1e-3 
@@ -60,6 +62,7 @@ classes_cifar = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 classes_intel = ('buildings', 'forest', 'glacier', 'mountain', 'sea', 'street')
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Epoch training function
 def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
@@ -77,10 +80,9 @@ def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
     data_time = AverageMeter()  # data loading time
     losses = AverageMeter()  # backward loss counting
     running_accuracies = AverageMeter() # accuracy counting
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("The model will be runnning on: ",device)
+    train_loader = DeviceDataLoader(train_loader, device)
     start = time.time()
-    for i, (images,labels) in enumerate(train_loader):
+    for i,(images,labels) in enumerate(train_loader):
         data_time.update(time.time() - start)
         
         # Move to default device
@@ -191,11 +193,11 @@ def mainTraining(model):
         if epochs in decay_lr_at:
             adjust_learning_rate(optimizer,decay_lr_to)
         
-        train_epoch(train_loader,model,loss_function,optimizer,epoch_num=epoch)
+        train_epoch(train_loader,model=model,criterion=loss_function,optimizer=optimizer,epoch_num=epoch)
         
         # Save Nnet as a checkpoint
         save_checkpoint(epoch,model,optimizer)
-    
+    save_model(model,sys.argv[1])
     # Plot training curves
     print('Loss and Accuracy Curves')
     # Evaluate the model on test set 
@@ -208,7 +210,7 @@ def mainTraining(model):
     plt.ylabel('accuracy')
     plt.legend(['Train', 'Test'])
     plt.title('Train vs Test Accuracy')
-
+    plt.show()
 
     # Plot losses
     plot2 = plt.figure(2)
@@ -218,7 +220,7 @@ def mainTraining(model):
     plt.ylabel('losses')
     plt.legend(['Train', 'Test'])
     plt.title('Train vs Test Losses')
-    save_model(model)
+    plt.show()
 
 if __name__ == '__main__':
     mainTraining(model=sys.argv[1])
