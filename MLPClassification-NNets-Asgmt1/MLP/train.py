@@ -131,7 +131,7 @@ def train_epoch(train_loader,model,criterion,optimizer,epoch_num):
                 'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch_num, i, len(train_loader),
                                                                 batch_time=batch_time,
                                                                 data_time=data_time, accuracy=running_accuracies, loss=losses))
-    del predicted,loss,outputs,images,labels  
+    del predicted,loss,outputs,images,labels,train_loader 
         
     
     
@@ -158,7 +158,7 @@ def mainTraining(model):
         elif model == 'NetworkBatchNorm':
             model = NetworkBatchNorm()
         elif model == 'DenseMLP':
-            model = DenseMLP()
+            model = DenseMLP(activation="relu")
         # initialize the optimizer with biases
         biases = list()
         not_biases = list()
@@ -168,7 +168,7 @@ def mainTraining(model):
                 biases.append(param)
             else:
                 not_biases.append(param)
-        optimizer = optimizer_select(net_params=[{'params': biases}, {'params': not_biases}],type='Adam',lr=lr)
+        optimizer = optimizer_select(net_params=[{'params': biases}, {'params': not_biases}],type='SGD',lr=lr)
         
     else:
         checkpoint = torch.load(checkpoint)
