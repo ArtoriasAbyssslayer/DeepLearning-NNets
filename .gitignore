@@ -11,3 +11,5 @@ __pycache__/
 *.dylib
 Dataset/
 MLPClassification-NNets-Asgmt1/MLP/checkpoint**
+SVM-Classification\.ipynb_checkpoints
+SVM-Classification\SVM-Classification.ipynb
