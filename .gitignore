@@ -10,3 +10,4 @@ __pycache__/
 *.so
 *.dylib
 Dataset/
+MLPClassification-NNets-Asgmt1/MLP/checkpoint**
