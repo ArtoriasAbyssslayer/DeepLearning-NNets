@@ -9,4 +9,9 @@ __pycache__/
 *.pyd
 *.so
 *.dylib
-Dataset/
+*.ipynb_checkpoints
+*.ipynb   
+./Dataset/*
+Svm-Classification/experiments/Dataset/*
+
+
