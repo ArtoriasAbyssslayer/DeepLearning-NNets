@@ -25,7 +25,7 @@ def train_svm(X_train,Y_train,params=None):
 import argparse
 def main(args):
     images_train,labels_train,images_test,labels_test = data_load_preproc()
-    params = {"clf_kearnel": "rbf", "clf_C"= 100, "clf_gamma": 0.01}    
+    params = {"clf_kearnel": "rbf", "clf_C": 100, "clf_gamma": 0.01}    
     start = time.time()
     clf = train_svm(images_train,labels_train,params)
     elapsed_time = time.time()-start
