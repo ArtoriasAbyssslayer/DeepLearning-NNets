@@ -11,6 +11,8 @@ __pycache__/
 *.dylib
 *.ipynb_checkpoints
 *.ipynb   
+Dataset/
+.vscode/
 ./Dataset/*
 Svm-Classification/experiments/Dataset/*
 
