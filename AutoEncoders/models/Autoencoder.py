@@ -9,12 +9,23 @@ from BasicLayers import DenseLayerPT
 
 # This refers to the latent size 
 encoding_dim  = 32
-# Define AutoEncoder
-class AutoEncoder(input_dim,encoding_dim):
-    def __init__(self,input_dim,encoding_dim,activation=F.relu):
+
+# Define Encoder part
+class Encoder(nn.Module):
+    '''
+        Inference Encoding Network implemented with MLP. 
+    '''
+# Define Decoder part
+
+
+# Define AutoEncoder Model
+class AutoEncoder(nn.Module):
+    def __init__(self,input_dim,hidden_dim,latent_dim,activation=F.relu):
         self.input_dim = input_dim
         self.encoding_dim = encoding_dim
-        self.encoder = DenseLayerPT(input_dim,encoding_dim,activation)
+        # input dim 784 we gradually descent this with 3 layers
+        self.encoder_l1 = DenseLayerPT(input_dim,hidden_dim,activation)
+        self.encoder_l2 = DenseLayerPT(hidden_dim,)
         self.decoder = DenseLayerPT(encoding_dim,input_dim,activation)
     def forward(self,X):
         self.X = X
@@ -31,6 +42,7 @@ class AutoEncoder(input_dim,encoding_dim):
     def encode(self,X):
         enc =
     def rec_loss(self):
+        # Simple Autoencoder reconstruction Loss  L_2 norm of generated and input image
         return tf.reduce_mean(tf.square(self.X - self.X_hat))
 
     
