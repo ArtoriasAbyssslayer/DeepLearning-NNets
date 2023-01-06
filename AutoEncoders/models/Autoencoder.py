@@ -7,25 +7,17 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 from BasicLayers import DenseLayerPT
 
 
-# This refers to the latent size 
-encoding_dim  = 32
 
-# Define Encoder part
-class Encoder(nn.Module):
-    '''
-        Inference Encoding Network implemented with MLP. 
-    '''
-# Define Decoder part
-
-
-# Define AutoEncoder Model
+# Define Simple AutoEncoder Model
 class AutoEncoder(nn.Module):
-    def __init__(self,input_dim,hidden_dim,latent_dim,activation=F.relu):
+    def __init__(self,input_dim,hidden_dim=300,latent_dim=64,activation=F.relu,bernoulli_input=None,gaussian_blurred_input=None):
         self.input_dim = input_dim
         self.encoding_dim = encoding_dim
-        # input dim 784 we gradually descent this with 3 layers
+        self.bernoulli_input = bernoulli_input
+        self.gaussian_blurred_input = gaussian_blurred_input
+        # input dim 784 we gradually descent this with 2 Dense Linear layers
         self.encoder_l1 = DenseLayerPT(input_dim,hidden_dim,activation)
-        self.encoder_l2 = DenseLayerPT(hidden_dim,)
+        self.encoder_l2 = DenseLayerPT(hidden_dim,encoding_dim,activation)
         self.decoder = DenseLayerPT(encoding_dim,input_dim,activation)
     def forward(self,X):
         self.X = X
@@ -40,7 +32,24 @@ class AutoEncoder(nn.Module):
         self.encoder.update(lr)
         self.decoder.update(lr)
     def encode(self,X):
-        enc =
+        x = X.view(-1,self.input_dim)
+        self.Z = self.encoder.forward(x)
+        return self.Z
+    def generate(self,Z):
+        self.X_hat = self.decoder.forward(Z)
+        return self.X_hat
+
+    def tensor_to_numpyImg(self,img):
+        bin = self.bernoulli_input
+        gas = self.gaussian_blurred_input
+
+        if bin:
+            img = img.view(bin.shape)
+            return (img > 0.5).to(img.dtype).reshape(img.size(0), 28, 28).cpu().detach().numpy()
+        elif gas:
+            return img.reshape(img.size(0), 28, 28).cpu().detach().numpy()
+        else:
+            return img.reshape(img.size(0), 28, 28).cpu().detach().numpy()
     def rec_loss(self):
         # Simple Autoencoder reconstruction Loss  L_2 norm of generated and input image
         return tf.reduce_mean(tf.square(self.X - self.X_hat))

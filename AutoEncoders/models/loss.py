@@ -10,14 +10,27 @@ import torch.nn.functional as F
 
 
 # Reconstruction + KL divergence losses summed over all elements and batch
-def loss_function(recon_x, x, mu, logvar):
-    BCE = F.binary_cross_entropy(recon_x, x.view(-1, 784), reduction='sum')
-
+def recon_kld(recon_x, x, mu, logvar, input_type='None'):
+    # Reconstruction Loss 
+    if input_type == 'bernoulli_input':
+        # BCE loss
+        # recon_loss = F.binary_cross_entropy_with_logits(recon_x, x.view(-1, 784), reduction='sum')
+        recon_loss = F.binary_cross_entropy_with_logits(recon_x, x.view(-1, 784))
+    elif input_type == 'gaussian_blurred_input':
+        # Gaussian Reconstruction Loss 
+        # recon_loss = F.mse_loss(recon_x,x.view(-1, 784),reduction='sum')
+        recon_loss = F.mse_loss(recon_x,x.view(-1, 784))  # without reduction to let gradients handle the loss 
+    else:
+        recon_loss = 0
+        raise ValueError('Input type not supported')
+    
+    # KL Divergence 
     # see Appendix B from VAE paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
     # https://arxiv.org/abs/1312.6114
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+    
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-    return BCE + KL
+    return recon_loss + KLD 
 

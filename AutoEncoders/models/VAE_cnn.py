@@ -14,22 +14,26 @@ class VAECnn(nn.Module):
             print("Constructing VAE basic model with bern ")
 
         # Convolutional Part 
-
+        # encoder
         self.encoder_cnn = nn.Sequential(
-            nn.Conv2d(1, 8, 3, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.Conv2d(8, 16, 3, stride=2, padding=1),
-            nn.BatchNorm2d(16),
-            nn.ReLU(True),
-            nn.Conv2d(16, 32, 3, stride=2, padding=0),
-            nn.ReLU(True)
+            nn.Conv2d(1, 8, [5,5], stride=2, padding=1), # [8, 14, 14]
+            nn.ReLU(),
+            nn.Conv2d(8, 16, [5,5], stride=2, padding=1), # [16, 7, 7]
+            nn.BatchNorm2d(16), 
+            nn.ReLU(),
+            nn.Conv2d(16, 32, [3,3], stride=2, padding=0),# [32, 3, 3]
+            nn.ReLU(),
+            nn.Conv2d(32, 64, [3,3], stride=2, padding=0), 
+            nn.ReLU(),
+            nn.AvgPool2d(kernel_size=(3,3)),# [64, 1, 1]
+            # Flatten Layer
+            nn.Flatten()
         )
-        # Flatten Layer
-        self.flatten = nn.Flatten(start_dim=1)
-
+        # VI formulation supplementary layers
+        self.fc_mu = nn.Linear
         # Linear Section
         self.encoder_lin = nn.Sequential(
-            n.Linear(3 * 3 * 32, 128),
+            n.Linear(latent_size , 64),
             nn.ReLU(True),
             nn.Linear(128, latent_size)
         )
@@ -65,6 +69,7 @@ class VAECnn(nn.Module):
             x = self.decoder_conv(x)
             return x
 
-        def eikonal_loss(self,dec)
-
-        def 
+        def reparameterize(self, mu, logvar):
+            std = torch.exp(0.5 * logvar)
+            eps = torch.randn_like(std)
+            return eps

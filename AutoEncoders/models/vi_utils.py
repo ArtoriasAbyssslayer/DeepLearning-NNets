@@ -52,3 +52,76 @@ def reparametrization_trick(mu,log_var):
     return z
 
 
+# Functions bellow are not used but were written for reference purposes
+
+def log_bernoulli(x, p):
+    """
+    Computes the log pdf of a Bernoulli distribution at each data point in x.
+    *Parameterized*
+
+    Args:
+        x: torch
+        p: torch
+        
+    Returns:
+        log_prob: torch.Tensor, shape (batch_size, )  
+    """
+    # return torch. 
+    return torch.sum(x * torch.log(p) + (1 - x) 
+                       * torch.log(1 - p), dim=-1)
+
+def _analytical_kl_bernoulli(p, q):
+    """
+    Computes the analytical KL divergence between two Bernoulli)
+    """
+    return torch.sum(p * torch.log(p / q), dim=-1)
+
+
+def _kl_divergence(self, z, q_params, p_params = None):
+    '''
+    The function compute the KL divergence between the distribution q_phi(z|x) and the prior p_theta(z)
+    of a sample z.
+    KL(q_phi(z|x) || p_theta(z))  = -∫ q_phi(z|x) log [ p_theta(z) / q_phi(z|x) ]
+                                    = -E[log p_theta(z) - log q_phi(z|x)]
+    :param z: sample from the distribution q_phi(z|x)
+    :param q_params: (mu, log_var) of the q_phi(z|x)
+    :param p_params: (mu, log_var) of the p_theta(z)
+    :return: the kl divergence KL(q_phi(z|x) || p_theta(z)) computed in z
+    '''
+
+    ## we have to compute the pdf of z wrt q_phi(z|x)
+    (mu, log_var) = q_params
+    qz = log_gaussian(z, mu, log_var)
+    # print('size qz:', qz.shape)
+    ## we should do the same with p
+    if p_params is None:
+        pz = log_standard_gaussian(z)
+    else:
+        (mu, log_var) = p_params
+        pz = log_gaussian(z, mu, log_var)
+        # print('size pz:', pz.shape)
+
+    kl = qz - pz
+
+    return kl
+
+## in case we are using a gaussian prior and a gaussian approximation family
+def _analytical_kl_gaussian(self, q_params):
+    '''
+    Way for computing the kl in an analytical way. This works for gaussian prior
+    and gaussian density family for the approximated posterior.
+    :param q_params: (mu, log_var) of the q_phi(z|x)
+    :return: the kl value computed analytically
+    '''
+
+    (mu, log_var) = q_params
+    # print(mu.shape)
+    # print(log_var.shape)
+    # prova = (log_var + 1 - mu**2 - log_var.exp())
+    # print(prova.shape)
+    # print(torch.sum(prova, 1).shape)
+    # kl = 0.5 * torch.sum(log_var + 1 - mu**2 - log_var.exp(), 1)
+    kl = 0.5 * torch.sum(log_var + 1 - mu.pow(2) - log_var.exp(), 1)
+
+    return kl
+

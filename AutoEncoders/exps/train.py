@@ -5,7 +5,7 @@ import torch
 import torchvision
 import utils
 import visualization_utils
-
+from utils import adjust_learning_rate,clip_gradient,AverageMeter
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 INPUT_DIM = 784
@@ -56,13 +56,19 @@ def train_epoch(dataloader,model,optimizer,criterion):
         loss = criterion(output,data)
         loss.backward()
         optimizer.step()
+        # Clip gradients, if we observe this is needed
+        if grad_clip is not None:
+            clip_gradient(optimizer,grad_clip)
+
         if batch_idx % 10 == 0:
-            fd
-        # TODO
+            #TODO add code for log batches
+            pass
 
 '''Whole net train'''
 def train(model,optimizer,criterion,dataloader,num_epochs):
     # TODO
+    pass
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name","-m",default='VAE.py')

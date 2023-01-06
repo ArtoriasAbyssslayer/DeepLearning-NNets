@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 # Import Variational Inference Utils made according to the 
 import vi_utils
-
+import loss 
 # Pick Device to train the model
 device = "cuda" if torch.cuda.is_available() else "cpu"
 """
@@ -100,23 +100,29 @@ class VAE(nn.Module):
 		else:
 			return img.reshape(img.size(0), 28, 28).cpu().detach().numpy()
 
+	# vae image generator
 	def generate(self,mu,log_var):
 		with torch.no_grad():
 			z = vi_utils.reparametrization_trick(mu, log_var)
 			dec = self.decode(z)
 			return self.tensor_to_numpyImg(dec)
+
+
 	# sample is the function that generates random samples of images -- generator
-	def sample(self, n_images):
-        '''
-        Method to sample from our generative model
-        :return: a sample starting from z ~ N(0,1)
-        '''
+	def generate_random_sample(self, n_images):
+        #    Method that generates random samples from the latent space
+        #    :return: a sample starting from z ~ N(0,1) converted to img 
+		with torch.no_grad():
+			
+			z = torch.randn((n_images, self.latent_dim), dtype = torch.float,device=device)
+			samples =  self.decoder(z)
+			return self.tensor_to_numpyImg(samples)
 
-        z = torch.randn((n_images, self.z_dims), dtype = torch.float)
-        # print(z)
-        samples =  self.decoder(z)
-
-        return samples
-
+	def loss_function(self,recon_x,x,mu,logvar,bernoulli_input,gaussian_blurred_input):
+		if bernoulli_input:
+			return loss.recon_kld(recon_x,x,mu,logvar,input_type='bernoulli_input')
+		else:
+			return loss.recon_kld(recon_x, x, mu, logvar,input_type='gaussian_blurred_input')
+	
 
 
