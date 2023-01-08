@@ -92,7 +92,7 @@ class VAE(nn.Module):
 	def tensor_to_numpyImg(self,img):
 		bin = self.bernoulli_input
 		gas = self.gaussian_blurred_input
-		if gaussian_blurred_input:
+		if gas:
 			return img.reshape(img.size(0), 28, 28).cpu().detach().numpy()
 		elif bin:
 			return (img > 0.5).to(img.dtype).reshape(img.size(0), 28, 28).cpu().detach().numpy()
