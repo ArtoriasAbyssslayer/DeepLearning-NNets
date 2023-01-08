@@ -2,32 +2,42 @@ import argparse
 import sys
 sys.path.append('..')
 import torch 
+import torch.optim
 import torchvision
 import utils
 import visualization_utils
 from utils import adjust_learning_rate,clip_gradient,AverageMeter
 from models import Autoencoder,VAE,VAE_cnn
+import torch.backends.cudnn as cudnn
 
 
-#### GLOBAL PARAMTERES ####
+from tqdm import tqdm
+import ssl 
+#### GLOBAL PARAMETERS ####
+cudnn.benchmark = True
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-INPUT_DIM = 784
-ehidden_dim = 400
-code_dim = 64
-NUM_EPOCHS = 100
-BATCH_SIZE = 32
+# Default Vals VAE
+# INPUT_DIM = 784
+# ehidden_dim = 400
+# code_dim = 64
+# BATCH_SIZE = 32
 INIT_LR_RATE = 3e-4
 decay_lr_at = [80,100]
 decay_lr_to = 3e-5
+# For SDG or RMSProp Optim
+momentum = 0.9
+rho = 0.9
+weight_decay = 3e-5
 iterations = 100
 n_classes = 10
 grad_clip =  True
 
 
+
 # Define the input placeholder
 input_dim  = x_train.shape[1]
 ''' One Epoch Training Function '''
-def train_epoch(dataloader,model,optimizer,criterion):
+def train_epoch(dataloader,model,optimizer):
     input_size = len(dataloader.dataset)
     # Signal the model for training. This helps some specific layers such as BatchNorm,Dropout that operate
     # differently in training and evaluation/inference states
@@ -59,14 +69,13 @@ def train_epoch(dataloader,model,optimizer,criterion):
         # return loss per 100 batches
         if batch_idx%100 == 0:
             losses.update(sum_loss.item(),batch_idx*len(data))
-            running_accuracies.update(accuracy,data)
             print('Epoch: [{0}][{1}/{2}]\t'
                 'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                 'Data Time {data_time.val:.3f} ({data_time.avg:.3f})\t'
                 'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch_num, i, len(train_loader),
                                                                 batch_time=batch_time,
-                                                                data_time=data_time, loss=losses))
-        return loss
+                                                                data_time=data_time, loss=losses.avg))
+        return loss,losses
 
 
 def test_epoch(dataloader,model):
@@ -92,22 +101,60 @@ def test_epoch(dataloader,model):
         
 #TODO - FUNCTION BELLOW
 '''Whole net train'''
-def train(network,optimizer,criterion,dataloader,num_epochs):
+def train(network,batch_size,lr,trainloader,testloader,optimizer,start_epoch,num_epochs,save_name):
+    # moce  network to selected device
     print("Training on {} device".format(DEVICE))
     network.to(DEVICE)
-    global start_epoch,label_map,epoch,checkpoint,decay_lr_at
-    param_buffer = None
+    min_loss = network.params['test_loss']
+    # Create Losses Buf
+    recon_losses_buf = np.zeros((num_epochs),)
+    kld_losses_buf = np.zeros((num_epochs),)
+    losses_buf = np.zeros((num_epochs),)
+   
+    global checkpoint,decay_lr_at
+    # train
+    print("--------------Model Training Initialized-----------------")
+    for epoch in tqdm(range(start_epoch,num_epochs)):
+        print("Epoch {}\n------".format(epoch))
+    
+        if epoch in decay_lr_at:
+            adjust_learning_rate(optimizer, decay_lr_to)
+        loss,losses = train_epoch(trainloader,network,optimizer)
+        # print('\nTrain: Average loss: {:.4f}'.format(losses.avg))
+        # if(epoch%10==0): I would  do it every 10 epochs decided to do it every epoch
+    
+        kld,recon,loss=test_epoch(testloader, network)
+        print('\nTest set: Average loss: {:.4f}, KLD Average loss:{:4f}, Recon Average loss:{:4f}\n'.format(loss,kld,recon))
+        kld_losses_buf[epoch] = kld
+        recon_losses_buf[epoch] = recon
+        losses_buf[epoch] = loss
 
-    for epoch in range(num_epochs):
-        print("Epoch {}/{}".format(epoch,num_epoch))
-        adfadf
-        #
-
+        # Save model checkpoint  if it got better    
+        if min_loss is None or  loss < min_loss:    
+            utils.save_model(network, optimizer,save_name)
+            print('TRAINING FINISHED OPTIMAL MODEL SAVED')
+        # Save Net as checkpoint if interaption
+        utils.save_checkpoint(epoch, network, optimizer,save_name=save_name)
+        print('CURRENT MODEL CHECKPOINT SAVED')
+        return kld_losses_buf,recon_losses_buf,losses_buf
+def net_builder(config):
+    if config['model_name'] == 'Autoencoder':
+        net = Autoencoder(config)
+    elif config['model_name'] == 'VAE':
+        if config['data_masking'] == 'bernoulli':
+            net = VAE(input_dim = 784,e_hidden_dim=config['hidden_size'],latent_dim=config['la'],bernoulli_input=config['data_masking'],gaussian_blurred_input=None)
+        else:
+            net = VAE(input_dim = 784,e_hidden_dim=config['hidden_size'],latent_dim=20,bernoulli_input=None,gaussian_blurred_input=None)
+    elif config['model_name'] == 'PCA':
+        net = utils.load_pca_model(model, config['model_name'])
+    else:   # model_name = 'VAE_cnn'
+        if config['data_masking'] == 'bernoulli':
+            net = VAE_cnn(args.input_dim,config['latent_size'],bernoulli=True)
+        else:
+            net = VAE_cnn(args.input_dim,config['latent_size'],bernoulli=False)
 def main(args):
-    checkpoint = args.model_name
-    net = VAE(args.input_size,args.hidden_size,args.latent_size)
-    optimizer = args.optimizer
-    criterion = args.criterion
+    global start_epoch,epoch,checkpoint,decay_lr_at,decay_lr_to
+    
     config = {
         'batch_size':args.batch_size,
         'lr':INIT_LR_RATE,
@@ -118,40 +165,56 @@ def main(args):
         'model_name':args.model_name,
         'model':net,
         'latent_size':args.latent_size,
-        'one_hot':args.one_hot_labels
-        
+        'one_hot':args.one_hot_labels,
+        'hidden_size':args.hidden_size
     }
+    checkpoint = config['save_name']
+    if checkpoint is None:
+        start_epoch = 0
+        config['save_name'] = config['model_name']
+        net_builder(config)
+    else:
+        if os.path.exists(checkpoint):
+            param_buffer = torch.load(checkpoint)
+            model_state, optimizer_state = param_buffer['model_state_dict'],param_buffer['optimizer_state_dict']
+            net_builder(config)
+            # Load pretrained weights and state
+            net = net.load_state_dict(model_state)
+            optimizer = optimizer.load_state_dict[optimizer_state]
+            start_epoch = checkpoint['epoch'] + 1
+            print('\n Loaded Checkpoint from epoch %d.\n'.format(start_epoch))
+           
+    # Select optimizer if model is not from checkpoint
+    if config['optimizer']=='Adam':
+        optimizer = optim.Adam(net.parameters(), lr=config['lr'])
+    elif config['optimizer']=='SGD':
+        optimizer = optim.SGD(net.parameters(), lr=config['lr'], momentum=momentum)
+    elif config['optimizer']=='RMSProp':
+        optimizer = optim.RMSProp(net.parameters(),lr=config['lr'],alpha=rho,momentum=momentum)
+    else:
+        print("Optimizer not supported")
+    
+    '''load mnist'''
     train_loader,test_loader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],one_hot_labels=['one_hot'],workers=4)
-    kld_losses,recon_losses,train_losses = train(net,config['batch_size'],config['lr'],train_loader,test_loader,checkpoint)
+    '''train and eval model'''
+    kld_losses,recon_losses,train_losses = train(net,config['batch_size'],config['lr'],train_loader,test_loader,optimizer,start_epoch,config['num_epochs'],config['save_name'])
+    '''print reconstruction,vi losses arrays'''
     print(kld_losses)
     print(recon_losses)
     print(train_losses)
-
-    plt.plot(kld_losses)
-    plt.plot(recon_losses)
-    plt.plot(train_losses)
-    plt.show()
-    
+    # Print curves
+    visualization_utils.plot_loss_curves(kld_losses,recon_losses,train_losses,config['num_epochs'],config['model_name'],isTrain=True)
+    print("End Of train Script")
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=64, metavar='N',
-                        help='input batch size for training (default: 64)')
-    parser.add_argument('--epochs', type=int, default=100, metavar='N',
-                        help='number of epochs to train (default: 100)')
-    parser.add_argument('--lr', type=float, default=0.001, metavar=NameError(),
-                        help='learning rate (default: 0.001)')
-    parser.add_argument('--optimizer', type=str, default='Adam', metavar='N',
-                        help='optimizer (default: Adam)')
-    parser.add_argument('--momentum', type=float, default=0.9, metavar='N',
-                        help='momentum (default: 0.9)')
-    parser.add_argument('--weight_decay', type=float, default=0.0001, metavar='N',
-                        help='weight decay (default: 0.0001)')
-    parser.add_argument('--one_hot_labels',"-oh", action='store_true')
-    parser.add_argument("--model_name","-m",default='VAE.py')
+    parser.add_argument("--model_name","-m",default='VAE')
+    arser.add_argument("--hidden_size","-h",default=400,type=int)
     parser.add_argument("--latent_size","-L",default=85,type=int)
     parser.add_argument("--data_masking","-t",default=None)
-    parser.add_argument("--batch_size","-b",default=32,type=int)
-    parser.add_argument("--num_epochs","-e",default=100,type=int)
-    parser.add_argument("--save_name","-s",default='VAE.pt')
+    parser.add_argument('--one_hot_labels',"-oh", action='store_true')
+    parser.add_argument('--batch_size',"-b",type=int, default=32, metavar='N',help='input batch size for training (default: 32)')
+    parser.add_argument('--num_epochs','-e', type=int, default=100, metavar='N',help='number of epochs to train (default: 100)')
+    parser.add_argument('--optimizer', type=str, default='Adam', metavar='N',help='optimizer (default: Adam)')
+    parser.add_argument("--save_name","-s",default=None)
     arguments=parser.parse_args()
     main(arguments)
