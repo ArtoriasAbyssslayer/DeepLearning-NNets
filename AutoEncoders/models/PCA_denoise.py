@@ -1,11 +1,11 @@
-import sys
-sys.path.append('..')
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt 
 from scipy.stats import stats
 import torch
 from sklearn.decomposition import PCA
+from setuptools import setup, find_packages
+setup(name='AutoEncoders', version='1.0', packages=find_packages())
 import utils
 import visualization_utils
 import time 
@@ -70,7 +70,7 @@ def main(args):
         fig,ax = plt.subplots(2,2)
         visualization_utils.plot_pca_components(pca_inverse)
     '''save pca model'''
-    utils.save_model(pca, 'pca')
+    utils.save_pca_model(pca, 'PCA')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

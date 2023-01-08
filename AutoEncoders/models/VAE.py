@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-# Import Variational Inference Utils made according to the 
+# Import Variational Inference Utils
 import vi_utils
 import loss 
 # Pick Device to train the model
@@ -52,12 +52,14 @@ class VAE(nn.Module):
 		# Initialize the weights of the model 
 		self.init_weights()
 
+
 	def init_weights(self):
 		# Initialize the weights of the model
 		for m in self.modules():
 			if isinstance(m,nn.Linear):
 				nn.init.xavier_uniform_(m.weight)
 				nn.init.constant_(m.bias,0)
+	
 	# Encoder process 
 	def encode(self,X):
 		# Flatten input image to pass it to the encoder (batch_size, input_features)
@@ -78,9 +80,11 @@ class VAE(nn.Module):
 		# Add sigmoid activation to obtain the image (sigmoid function add the threshold we need)
 		return torch.sigmoid(x)
 	
+
 	def reparametrize(self,mu,logvar):
 		# Reparametrization Trick using vi_utils
 		return vi_utils.reparametrization_trick(mu,logvar)
+
 
 	def forward(self,X):
 		mu,logs2 = self.encode(X)
@@ -89,6 +93,7 @@ class VAE(nn.Module):
 		X_recon = self.decode(z_reparametrized)
 		return X_recon,mu,logs2
 	
+
 	def tensor_to_numpyImg(self,img):
 		bin = self.bernoulli_input
 		gas = self.gaussian_blurred_input
@@ -98,6 +103,7 @@ class VAE(nn.Module):
 			return (img > 0.5).to(img.dtype).reshape(img.size(0), 28, 28).cpu().detach().numpy()
 		else:
 			return img.reshape(img.size(0), 28, 28).cpu().detach().numpy()
+
 
 	# vae image generator
 	def generate(self,mu,log_var):
@@ -116,7 +122,11 @@ class VAE(nn.Module):
 			z = torch.randn((n_images, self.latent_dim), dtype = torch.float,device=device)
 			samples =  self.decoder(z)
 			return self.tensor_to_numpyImg(samples)
-
+	def generate_next_sample(self,n_images):
+		with torch.no_grad():
+			z = torch.randn((n_images+1),self.latent_dim, dtype = torch.float,device=device)
+			samples =  self.decoder(z)
+			return self.tensor_to_numpyImg(samples)
 	def loss_function(self,recon_x,x,mu,logvar):
 		if self.bernoulli_input:
 			return loss.recon_kld(recon_x,x,mu,logvar,input_type='bernoulli_input')

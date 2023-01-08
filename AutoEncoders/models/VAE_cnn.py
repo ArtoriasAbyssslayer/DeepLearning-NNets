@@ -7,15 +7,16 @@ import loss
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-class VAECnn(nn.Module):
+class VAE_cnn(nn.Module):
     def __init__(self,input_dim,latent_size,bernoulli):
-        super(VAECnn,self).__init__()
+        super(VAE_cnn,self).__init__()
         self.latent_size = latent_size
         self.input_dim = input_dim
         if bernoulli:
             print("Constructing VAE basic model with bernoulli masked images")
         else:  
             print("Reconstructon ")
+
 
         # Convolutional Part 
         # encoder
@@ -32,7 +33,10 @@ class VAECnn(nn.Module):
             nn.AvgPool2d(kernel_size=(3,3)),# [64, 1, 1]
             
         )
+
+
         self.flatten = nn.Flatten()
+
 
         # VI formulation supplementary layers
         self.fc_mu = nn.Linear(64, latent_size)
@@ -58,6 +62,7 @@ class VAECnn(nn.Module):
             nn.Unflatten(dim=1, unflattened_size=(64, 1, 1))
         )
         
+
         #Conv Part
         self.decoder_cnn = nn.Sequential(
             nn.ConvTranspose2d(64, 32, (3,3)),
@@ -71,7 +76,16 @@ class VAECnn(nn.Module):
             nn.ConvTranspose2d(8, 1, [2,2], stride=2, padding=1),
             nn.Sigmoid(),
         )
-        
+        self.init_weights()
+
+
+    def init_weights(self):
+        # Initialize the weights of the model
+        for m in self.modules():
+            if isinstance(m,nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                nn.init.constant_(m.bias,0)
+
     def forward(self,X):
         enc = self.encoder_cnn(X)
         x_flat = self.flatten(enc)
@@ -84,18 +98,34 @@ class VAECnn(nn.Module):
         decoded = self.decoder_cnn(x_hat_unflat)
         return decoded,mu,logs2
 
+
     def reparameterize(self, mu, logvar):
         z = vi_utils.reparametrization_trick(mu=mu,log_var=logvar)
         return z
-            
+
+
+    def generate(self,mu,log_var):
+        with torch.no_grad():
+            z = vi_utils.reparametrization_trick(mu, log_var)
+            dec = self.decode(z)
+            return self.tensor_to_numpyImg(dec)
+
+
     def generate_random_sample(self, n_images):
         #    Method that generates random samples from the latent space
         #    :return: a sample starting from z ~ N(0,1) converted to img 
         with torch.no_grad():
                 
-            z = torch.randn((n_images, self.latent_dim), dtype = torch.float,device=device)
+            z = torch.randn((n_images, self.latent_size), dtype = torch.float,device=device)
             samples =  self.decoder(z)
             return self.tensor_to_numpyImg(samples)
+    
+    def generate_next_sample(self,n_images):
+        with torch.no_grad():
+            z = torch.randn((n_images+1),self.latent_size, dtype = torch.float,device=device)
+            samples =  self.decoder(z)
+            return self.tensor_to_numpyImg(samples)
+
     def tensor_to_numpyImg(self,tensor):
         bin = self.bernoulli
         if bin:
@@ -104,12 +134,9 @@ class VAECnn(nn.Module):
         else:
             recon_gas = img.reshape(img.size(0),28,28).cpu().detach().numpy()
             return recon_gas
-    def generate_sample(z):
-        #    Method that generates random samples from the latent space
-        #    :return: a sample starting from z ~ N(0,1) converted to img 
-        with torch.no_grad():
-            samples =  self.decoder(z)
-            return self.tensor_to_numpyImg(samples)
+    
+    
+    
     def loss_function(self,recon_x,x,mu,logvar):
         if self.bernoulli:
             return loss.recon_kld(recon_x,x,mu,logvar,input_type='bernoulli_input')
@@ -121,7 +148,7 @@ if __name__ == "__main__":
     # NOTE THIS IS JUST A TEST CODE
     # NOTE CNN NEED 4D INPUT 
     x = torch.randn(1,1,28,28)
-    model = VAECnn(input_dim=(1,28,28,1),latent_size=20,bernoulli=True)
+    model = VAE_cnn(input_dim=(1,28,28,1),latent_size=20,bernoulli=True)
     recon,mu,logvar = model(x)
     print(recon.shape)
     print(mu.shape)

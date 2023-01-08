@@ -3,8 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 # Pick Device to train the model
+import sys
+sys.path.append('models')
+from BasicLayers import DenseLayer
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
-from BasicLayers import DenseLayerPT
 
 
 
