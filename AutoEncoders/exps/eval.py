@@ -27,9 +27,8 @@ def main(args):
 
     train_Loader,test_Loader = utils.load_mnist(batch_size = args.batch_size,
                                                 masking = args.data_masking)
-                                                    
 
-    # TODO
+    
 
 
 
