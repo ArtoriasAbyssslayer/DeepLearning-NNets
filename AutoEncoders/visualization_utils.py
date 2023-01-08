@@ -29,9 +29,38 @@ def plot_pca_components(pca):
           subplot.imshow(img)
           i=i+1
      
+def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrain):
+     fig = plt.figure()
+     if isTrain: 
+          fig.subtitle('TRAINING LOSSES')
+     else:
+          fig.subtitle('TESTING LOSSES')
+     if type == 'Autoencoder' or type == 'PCA':
+          ax2.set_title('Accumulated Loss')
+          ax2.set_xlabel('Epochs')
+          ax2.set_ylabel('Sum Loss')
+          plt.plot(np.arange(1,num_epochs+1),train_losses)
+          plt.show()
+     else:
+          ax = plt.subplot(1,figsize(10,10))
+          ax.set_title('Kullback–Leibler divergence Loss')
+          ax.set_xlabel('Epochs')
+          ax.set_ylabel('KLD')
+          plt.plot(np.arange(1,num_epochs+1),kld_losses)
+          ax2 = plt.subplot(2,figsize(10,10))
+          ax2.set_title('Reconstruction Loss')
+          ax2.set_xlabel('Epochs')
+          ax2.set_ylabel('Recon')
+          plt.plot(np.arange(1,num_epochs+1),recon_losses)
+          ax3 = plt.subplot(3,figsize(10,10))
+          ax2 = plt.subplot(2,figsize(10,10))
+          ax2.set_title('Accumulated Loss')
+          ax2.set_xlabel('Epochs')
+          ax2.set_ylabel('Sum Loss')
+          plt.plot(np.arange(1,num_epochs+1),train_losses)
+          plt.show()
 
-
-def plot_ae_outputs(encoder,decoder,n=10):
+def plot_ae_outputs(encoder,decoder,test_dataset,n=10):
     plt.figure(figsize=(16,4.5))
     targets = test_dataset.targets.numpy()
     t_idx = {i:np.where(targets==i)[0][0] for i in range(n)}
@@ -56,7 +85,8 @@ def plot_ae_outputs(encoder,decoder,n=10):
     plt.show()   
 
 
-#TODO CREATE THE FUNC FOR BELLOW TASK
+
+#TODO CREATE THE FUNC FOR BELLOW TASK -- Left for future work
 """
     Visualize the latent space with t-SNE
 """

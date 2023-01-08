@@ -176,17 +176,31 @@ import os
 
 
 savepath = './saved_models/'
+def save_pca_model(model,model_name):
+    if not os.path.exists(savepath):
+        os.makedirs(savepath)
+    torch.save(model.state_dict(), savepath+model_name)
+    print('Model saved to '+savepath+model_name)
+    return
 
-def save_model(model,name):
-    path = "./saved_models/"
+def load_pca_model(model,model_name):
+    model.load_state_dict(torch.load(savepath+model_name))
+    print('Model loaded from '+savepath+model_name)
+    return
+
+def save_model(model,optimizer,save_name):
     if not os.path.exists(savepath):   
         os.mkdir(savepath)
-    torch.save(model.state_dict(), path+name)
+    torch.save({
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'test_loss': loss,
+            }, savepath+save_name)
     print("-Model Saved ....!")
 
 
     
-def save_checkpoint(epoch, model, optimizer, suffix=False):
+def save_checkpoint(epoch, model, optimizer, suffix=False,save_name=None):
     """
     Save model checkpoint.
 
@@ -199,9 +213,14 @@ def save_checkpoint(epoch, model, optimizer, suffix=False):
         os.mkdir(savepath)
     state = {'epoch': epoch,
              'model': model,
-             'optimizer': optimizer}
-    filename = 'checkpoint_model{}.pth.tar'.format(model.__class__.__name__)
+             'optimizer': optimizer,
+             'test_loss': test_loss
+             }
+    if save_name == None:
+        filename = 'checkpoint-{}.ptr'.format(model.__class__.__name__)
+    else:
+        filename = 'checkpoint-{}.ptr'.format(savepath+save_name)
     if suffix:
-        filename = 'checkpoint_model{}_epoch{}.pth.tar'.format(model.__class__.__name__,epoch)
+        filename = 'checkpoint-model{}_epoch{}.ptr'.format(model.__class__.__name__,epoch)
     torch.save(state, filename)
     print("-Model checkpoint Saved ....!")
