@@ -60,20 +60,20 @@ def plot_ae_outputs(encoder,decoder,n=10):
 """
     Visualize the latent space with t-SNE
 """
-import tqdm
-import torch
-encoded_samples = []
-for sample in tqdm(test_dataset):
-    img = sample[0].unsqueeze(0).to(device)
-    label = sample[1]
+# import tqdm
+# import torch
+# encoded_samples = []
+# for sample in tqdm(test_dataset):
+#     img = sample[0].unsqueeze(0).to(device)
+#     label = sample[1]
 
     
 
-from sklearn.manifold import TSNE
+# from sklearn.manifold import TSNE
 
-tsne = TSNE(n_components=2)
-tsne_results = tsne.fit_transform(encoded_samples.drop(['label'],axis=1))
-fig = px.scatter(tsne_results, x=0, y=1,
-                 color=encoded_samples.label.astype(str),
-                 labels={'0': 'tsne-2d-one', '1': 'tsne-2d-two'})
-fig.show()
+# tsne = TSNE(n_components=2)
+# tsne_results = tsne.fit_transform(encoded_samples.drop(['label'],axis=1))
+# fig = px.scatter(tsne_results, x=0, y=1,
+#                  color=encoded_samples.label.astype(str),
+#                  labels={'0': 'tsne-2d-one', '1': 'tsne-2d-two'})
+# fig.show()
