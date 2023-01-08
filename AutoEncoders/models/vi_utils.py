@@ -1,5 +1,6 @@
 import torch 
 import numpy as np
+from torch.autograd import Variable
 def log_standard_gaussian(x):
     """
     Computes the log pdf of a standard Gaussian distribution at each data point in x. Also
@@ -43,12 +44,12 @@ def reparametrization_trick(mu,log_var):
         :return: z = mu + sigma * noise
     '''
     # Get var/2 using logarithm property
-    std = torch.expo(log_var*0.5)
+    std = torch.exp(log_var*0.5)
 
     # Sample the noise(we dont have to keep gradients with respect to the noise)
 
-    eps = Variable(torch.randn_like(std), requires_grad = False)
-    z = mu*addcmul(std,eps)
+    epsilon = Variable(torch.randn_like(std), requires_grad = False)
+    z = torch.addcmul(mu,std,epsilon)
     return z
 
 

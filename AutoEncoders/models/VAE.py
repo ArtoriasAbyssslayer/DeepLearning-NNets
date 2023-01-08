@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import numpy as np
 # Import Variational Inference Utils made according to the 
 import vi_utils
 import loss 
@@ -38,14 +38,10 @@ class VAE(nn.Module):
 		self.latent_dim = latent_dim
 		self.bernoulli_input = bernoulli_input
 		self.gaussian_blurred_input = gaussian_blurred_input
-	
-		
-		# Create the architecture
-		neurons = [input_dim, *e_hidden_dim]
 
 		
 		# Encoder Layers Definition
-		self.encoder_inputHidden2 = nn.Linear(in_dim=input_dim,out_features=e_hidden_dim)
+		self.encoder_inputHidden2 = nn.Linear(in_features=input_dim,out_features=e_hidden_dim)
 		self.encoder_hidden2mu =  nn.Linear(in_features=e_hidden_dim, out_features=latent_dim)
 		self.encoder_hidden2logvar = nn.Linear(in_features=e_hidden_dim,out_features=latent_dim)
 
@@ -62,15 +58,6 @@ class VAE(nn.Module):
 			if isinstance(m,nn.Linear):
 				nn.init.xavier_uniform_(m.weight)
 				nn.init.constant_(m.bias,0)
-
-	def reparametrize(self,mu,logvar):
-		# Reparametrization Trick using vi_utils
-		 return vi_utils.reparametrization_trick(mu,logvar)
-
-	def forward(self,X):
-		z,z_mu,z_log_var = self.encode(self,X)
-		kl_divergence
-
 	# Encoder process 
 	def encode(self,X):
 		# Flatten input image to pass it to the encoder (batch_size, input_features)
@@ -86,9 +73,21 @@ class VAE(nn.Module):
 	# Decoder process 
 	def decode(self,z):
 		# Fit x into Encoder to obtain mean and logvar
-		z = F.relu(self.decoder_z2hidden(x))
+		h = F.relu(self.decoder_z2hidden(z))
+		x =  F.relu(self.decoder_hidden2img(h))
 		# Add sigmoid activation to obtain the image (sigmoid function add the threshold we need)
-		return torch.sigmoid(self.decoder_hidden2img(x))
+		return torch.sigmoid(x)
+	
+	def reparametrize(self,mu,logvar):
+		# Reparametrization Trick using vi_utils
+		return vi_utils.reparametrization_trick(mu,logvar)
+
+	def forward(self,X):
+		mu,logs2 = self.encode(X)
+		
+		z_reparametrized = self.reparametrize(mu,logvar=logs2)
+		X_recon = self.decode(z_reparametrized)
+		return X_recon,mu,logs2
 	
 	def tensor_to_numpyImg(self,img):
 		bin = self.bernoulli_input
@@ -108,7 +107,7 @@ class VAE(nn.Module):
 			return self.tensor_to_numpyImg(dec)
 
 
-	# sample is the function that generates random samples of images -- generator
+	# generate_random_sample is the function that generates random samples of images -- generator
 	def generate_random_sample(self, n_images):
         #    Method that generates random samples from the latent space
         #    :return: a sample starting from z ~ N(0,1) converted to img 
@@ -118,11 +117,9 @@ class VAE(nn.Module):
 			samples =  self.decoder(z)
 			return self.tensor_to_numpyImg(samples)
 
-	def loss_function(self,recon_x,x,mu,logvar,bernoulli_input,gaussian_blurred_input):
-		if bernoulli_input:
+	def loss_function(self,recon_x,x,mu,logvar):
+		if self.bernoulli_input:
 			return loss.recon_kld(recon_x,x,mu,logvar,input_type='bernoulli_input')
 		else:
 			return loss.recon_kld(recon_x, x, mu, logvar,input_type='gaussian_blurred_input')
 	
-
-

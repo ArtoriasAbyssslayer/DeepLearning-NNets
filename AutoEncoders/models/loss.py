@@ -31,6 +31,6 @@ def recon_kld(recon_x, x, mu, logvar, input_type='None'):
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-
-    return recon_loss + KLD 
+    sum_loss = recon_loss + KLD
+    return recon_loss, KLD, sum_loss
 
