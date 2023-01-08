@@ -8,6 +8,11 @@ def outputs_to_gif(filenames):
      for filename in filenames:
           images.append(imageio.imread(filename))
      imageio.mimsave('movie.gif', images)
+def numpy_to_gif(array):
+     images = []
+     for i in range(array.shape[0]):
+          images.append(array[i])
+     imageio.mimsave('movie.gif', images)
 
 def plot_image(img):
      fig = plt.figure()
