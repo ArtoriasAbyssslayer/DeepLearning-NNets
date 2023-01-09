@@ -24,7 +24,7 @@ def plot_image(img):
 
 def plot_pca_components(pca):
      fig = plt.figure()
-     fig.subtitle('MNIST PRINCIPAL COMPONENTS')
+     fig.title('MNIST PRINCIPAL COMPONENTS')
      feature_dim = int(np.ceil(np.sqrt(pca.n_components_)))
      i = 1
      for c in pca.components_:
@@ -38,9 +38,9 @@ def plot_pca_components(pca):
 def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrain):
      fig = plt.figure()
      if isTrain: 
-          fig.subtitle('TRAINING LOSSES')
+          fig.title('TRAINING LOSSES')
      else:
-          fig.subtitle('TESTING LOSSES')
+          fig.title('TESTING LOSSES')
      if type == 'Autoencoder' or type == 'PCA':
           ax2.set_title('Accumulated Loss')
           ax2.set_xlabel('Epochs')
