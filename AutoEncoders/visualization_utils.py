@@ -1,7 +1,8 @@
 import imageio
 import os
 import numpy as np
-import cv2 as cv
+import cv2 as cv 
+import matplotlib.pyplot as plt
 def outputs_to_gif(filenames):
      filenames=os.listdir()
      images = []

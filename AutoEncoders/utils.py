@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 import torch.nn.functional as F
-
+import torch 
  # TODO FINISH THE LOADERS FOR MNIST
 '''Data Loading Utility Functions'''
 
@@ -38,7 +38,7 @@ class ThresholdMaskTransform(object):
 		return (x > self.thr).to(x.dtype('float32')) 
 
 '''Label Transform'''
-
+labels=['0','1','2','3','4','5','6','7','8','9']
 class OneHotLabelTransform(object):
     def __init__(self,n_classes):
         self.n_classes = n_classes
@@ -76,8 +76,9 @@ def load_mnist(batch_size=32, masking=None, one_hot_labels=False,workers=4):
     # label preproc
     if one_hot_labels:
         label_Transformer = transforms.Compose([
-            OneHotLabelTransform(n_classes=10)
+            OneHotLabelTransform(n_classes=10,labels=labels)
             ])
+
     else:
         label_Transformer = None
 
@@ -116,7 +117,6 @@ def clip_gradient(optimizer, grad_clip):
 def adjust_learning_rate(optimizer, scale):
     """
     Scale learning rate by a specified factor.
-
     :param optimizer: optimizer whose learning rate must be shrunk.
     :param scale: factor to multiply learning rate with.
     """
@@ -200,7 +200,7 @@ def save_model(model,optimizer,save_name):
 
 
     
-def save_checkpoint(epoch, model, optimizer, suffix=False,save_name=None):
+def save_checkpoint(epoch,min_loss,model, optimizer, suffix=False,save_name=None):
     """
     Save model checkpoint.
 
@@ -214,13 +214,13 @@ def save_checkpoint(epoch, model, optimizer, suffix=False,save_name=None):
     state = {'epoch': epoch,
              'model': model,
              'optimizer': optimizer,
-             'test_loss': test_loss
+             'test_loss': min_loss
              }
     if save_name == None:
-        filename = 'checkpoint-{}.ptr'.format(model.__class__.__name__)
+        filename = savepath+'checkpoint_{}.ptr'.format(model.__class__.__name__)
     else:
-        filename = 'checkpoint-{}.ptr'.format(savepath+save_name)
+        filename = savepath+'checkpoint_{}.ptr'.format(model.__class__.__name__)
     if suffix:
-        filename = 'checkpoint-model{}_epoch{}.ptr'.format(model.__class__.__name__,epoch)
+        filename = savepath+'checkpoint_epoch_{}_{}.ptr'.format(epoch,model.__class__.__name__)
     torch.save(state, filename)
     print("-Model checkpoint Saved ....!")

@@ -1,17 +1,19 @@
 import argparse
 import sys
-sys.path.append('..')
+import os 
+sys.path.append(os.getcwd())
+print(sys.path)
 import torch 
-import torch.optim
+import torch.optim as optim
 import torchvision
 import utils
 import visualization_utils
 from utils import adjust_learning_rate,clip_gradient,AverageMeter
 from models import Autoencoder,VAE,VAE_cnn
 import torch.backends.cudnn as cudnn
-
-
+import numpy as np
 from tqdm import tqdm
+import time
 import ssl 
 #### GLOBAL PARAMETERS ####
 cudnn.benchmark = True
@@ -23,7 +25,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # BATCH_SIZE = 32
 INIT_LR_RATE = 3e-4
 decay_lr_at = [80,100]
-decay_lr_to = 3e-5
+decay_lr_to = 0.2
 # For SDG or RMSProp Optim
 momentum = 0.9
 rho = 0.9
@@ -32,10 +34,6 @@ iterations = 100
 n_classes = 10
 grad_clip =  True
 
-
-
-# Define the input placeholder
-input_dim  = x_train.shape[1]
 ''' One Epoch Training Function '''
 def train_epoch(dataloader,model,optimizer):
     input_size = len(dataloader.dataset)
@@ -51,31 +49,33 @@ def train_epoch(dataloader,model,optimizer):
     start_time = time.time()
     for batch_idx,(data,target) in enumerate(dataloader):
         data,target = data.to(DEVICE),target.to(DEVICE)
-        data_time.update(time.time() - start)
+        data_time.update(time.time() - start_time)
         dec, mu, logs2 = model(data)
         # Add also the input transformation type to the loss function
-        if(model.__name__=='Autoencoder'):
+        if(model.__class__.__name__=='Autoencoder'):
             sum_loss = model.rec_loss()
         else:
-            kld_loss,recon_loss,sum_loss = model.recon_kld(dec,mu,logs2)
+            kld_loss,recon_loss,sum_loss = model.loss_function(dec,data,mu,logvar=logs2)
         # Clip gradients, if we observe this is needed
         if grad_clip is not None:
             clip_gradient(optimizer,grad_clip)
         # Init the gradients None -> +prefomance +lower memory footprint
         optimizer.zero_grad()
-        loss.backward()
+        sum_loss.backward()
         optimizer.step()
-        batch_time.update(time.time() - start)
+        batch_time.update(time.time() - start_time)
+        
         # return loss per 100 batches
         if batch_idx%100 == 0:
-            losses.update(sum_loss.item(),batch_idx*len(data))
-            print('Epoch: [{0}][{1}/{2}]\t'
+            losses.update(sum_loss.item())
+            batch_current =  batch_idx*len(data)
+            print('Current Batch\t' 
                 'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                 'Data Time {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(epoch_num, i, len(train_loader),
+                'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(batch_current/input_size, len(dataloader),
                                                                 batch_time=batch_time,
-                                                                data_time=data_time, loss=losses.avg))
-        return loss,losses
+                                                                data_time=data_time, loss=losses))
+        return sum_loss,losses
 
 
 def test_epoch(dataloader,model):
@@ -89,11 +89,11 @@ def test_epoch(dataloader,model):
         for batch_idx,(data,target) in enumerate(dataloader):
             data,target = data.to(DEVICE),target.to(DEVICE)
             dec, mu, logs2 = model(data)
-            if(model.__name__=='Autoencoder'):
+            if(model.__class__.__name__=='Autoencoder'):
                 sum_loss = model.rec_loss()
                 recon_losses.update(sum_loss.item())
             else:
-                kld_loss,recon_loss,sum_loss = model.recon_kld(dec,mu,logs2)
+                kld_loss,recon_loss,sum_loss = model.loss_function(dec,data,mu,logvar=logs2)
                 klds.update(kld_loss.item())
                 recon_losses.update(recon_loss.item())
                 losses.update(sum_loss.item())
@@ -101,11 +101,10 @@ def test_epoch(dataloader,model):
         
 #TODO - FUNCTION BELLOW
 '''Whole net train'''
-def train(network,batch_size,lr,trainloader,testloader,optimizer,start_epoch,num_epochs,save_name):
+def train(network,batch_size,lr,trainloader,testloader,min_loss,optimizer,start_epoch,num_epochs,save_name):
     # moce  network to selected device
     print("Training on {} device".format(DEVICE))
     network.to(DEVICE)
-    min_loss = network.params['test_loss']
     # Create Losses Buf
     recon_losses_buf = np.zeros((num_epochs),)
     kld_losses_buf = np.zeros((num_epochs),)
@@ -115,7 +114,7 @@ def train(network,batch_size,lr,trainloader,testloader,optimizer,start_epoch,num
     # train
     print("--------------Model Training Initialized-----------------")
     for epoch in tqdm(range(start_epoch,num_epochs)):
-        print("Epoch {}\n------".format(epoch))
+        print("Epoch {}\n----------".format(epoch))
     
         if epoch in decay_lr_at:
             adjust_learning_rate(optimizer, decay_lr_to)
@@ -131,30 +130,31 @@ def train(network,batch_size,lr,trainloader,testloader,optimizer,start_epoch,num
 
         # Save model checkpoint  if it got better    
         if min_loss is None or  loss < min_loss:    
-            utils.save_model(network, optimizer,save_name)
+            utils.save_model(network, optimizer,save_name) 
             print('TRAINING FINISHED OPTIMAL MODEL SAVED')
         # Save Net as checkpoint if interaption
-        utils.save_checkpoint(epoch, network, optimizer,save_name=save_name)
+        utils.save_checkpoint(epoch, min_loss,network, optimizer,save_name=save_name)
         print('CURRENT MODEL CHECKPOINT SAVED')
-        return kld_losses_buf,recon_losses_buf,losses_buf
+    return kld_losses_buf,recon_losses_buf,losses_buf
 def net_builder(config):
     if config['model_name'] == 'Autoencoder':
         net = Autoencoder(config)
     elif config['model_name'] == 'VAE':
-        if config['data_masking'] == 'bernoulli':
-            net = VAE(input_dim = 784,e_hidden_dim=config['hidden_size'],latent_dim=config['la'],bernoulli_input=config['data_masking'],gaussian_blurred_input=None)
+        if config['data_masking'] == 'bin-masking':
+            net = VAE.VAE(input_dim = 784,e_hidden_dim=config['hidden_size'],latent_dim=config['latent_size'],bernoulli_input=config['data_masking'],gaussian_blurred_input=None)
         else:
-            net = VAE(input_dim = 784,e_hidden_dim=config['hidden_size'],latent_dim=20,bernoulli_input=None,gaussian_blurred_input=None)
+            net = VAE.VAE(input_dim = 784,e_hidden_dim=config['hidden_size'],latent_dim=20,bernoulli_input=None,gaussian_blurred_input=None)
     elif config['model_name'] == 'PCA':
         net = utils.load_pca_model(model, config['model_name'])
     else:   # model_name = 'VAE_cnn'
-        if config['data_masking'] == 'bernoulli':
-            net = VAE_cnn(args.input_dim,config['latent_size'],bernoulli=True)
+        if config['data_masking'] == 'bin-masking':
+            net = VAE_cnn.VAE_cnn(args.input_dim,config['latent_size'],bernoulli=True)
         else:
-            net = VAE_cnn(args.input_dim,config['latent_size'],bernoulli=False)
+            net = VAE_cnn.VAE_cnn(args.input_dim,config['latent_size'],bernoulli=False)
+    return net
 def main(args):
     global start_epoch,epoch,checkpoint,decay_lr_at,decay_lr_to
-    
+    start_epoch = 0
     config = {
         'batch_size':args.batch_size,
         'lr':INIT_LR_RATE,
@@ -163,41 +163,52 @@ def main(args):
         'optimizer':args.optimizer,
         'save_name':args.save_name,
         'model_name':args.model_name,
-        'model':net,
         'latent_size':args.latent_size,
         'one_hot':args.one_hot_labels,
         'hidden_size':args.hidden_size
     }
     checkpoint = config['save_name']
+    net = net_builder(config)
+    min_loss = 0
     if checkpoint is None:
-        start_epoch = 0
         config['save_name'] = config['model_name']
-        net_builder(config)
     else:
         if os.path.exists(checkpoint):
             param_buffer = torch.load(checkpoint)
             model_state, optimizer_state = param_buffer['model_state_dict'],param_buffer['optimizer_state_dict']
-            net_builder(config)
             # Load pretrained weights and state
             net = net.load_state_dict(model_state)
             optimizer = optimizer.load_state_dict[optimizer_state]
             start_epoch = checkpoint['epoch'] + 1
             print('\n Loaded Checkpoint from epoch %d.\n'.format(start_epoch))
-           
+            min_loss = prams_buffer['test_loss'] if param_buffer != None else 0
+    
+    
+    
+    print(net)
+    biases = list()
+    not_biases = list()
+    for param_name, param in net.named_parameters():
+        if param.requires_grad:
+            if param_name.endswith('.bias'):
+                biases.append(param)
+            else:
+                not_biases.append(param)
     # Select optimizer if model is not from checkpoint
     if config['optimizer']=='Adam':
-        optimizer = optim.Adam(net.parameters(), lr=config['lr'])
+        optimizer = optim.Adam(params=[{'params': biases, 'lr': 10 * config['lr']}, {'params': not_biases}],lr=config['lr'],weight_decay=weight_decay)
     elif config['optimizer']=='SGD':
-        optimizer = optim.SGD(net.parameters(), lr=config['lr'], momentum=momentum)
+        optimizer = optim.SGD(params=[{'params': biases, 'lr': 10 * config['lr']}, {'params': not_biases}],lr=config['lr'], momentum=momentum,weight_decay=weight_decay)
     elif config['optimizer']=='RMSProp':
-        optimizer = optim.RMSProp(net.parameters(),lr=config['lr'],alpha=rho,momentum=momentum)
+        optimizer = optim.RMSProp(params=[{'params': biases, 'lr': 10 * config['lr']}, {'params': not_biases}],lr=config['lr'],alpha=rho,momentum=momentum,weight_decay=weight_decay)
     else:
         print("Optimizer not supported")
     
     '''load mnist'''
-    train_loader,test_loader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],one_hot_labels=['one_hot'],workers=4)
+    train_loader,test_loader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],one_hot_labels=False,workers=4)
     '''train and eval model'''
-    kld_losses,recon_losses,train_losses = train(net,config['batch_size'],config['lr'],train_loader,test_loader,optimizer,start_epoch,config['num_epochs'],config['save_name'])
+    print(start_epoch)
+    kld_losses,recon_losses,train_losses = train(net,config['batch_size'],config['lr'],train_loader,test_loader,min_loss,optimizer,start_epoch,config['num_epochs'],config['save_name'])
     '''print reconstruction,vi losses arrays'''
     print(kld_losses)
     print(recon_losses)
@@ -208,7 +219,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name","-m",default='VAE')
-    arser.add_argument("--hidden_size","-h",default=400,type=int)
+    parser.add_argument("--hidden_size","-hd",default=400,type=int)
     parser.add_argument("--latent_size","-L",default=85,type=int)
     parser.add_argument("--data_masking","-t",default=None)
     parser.add_argument('--one_hot_labels',"-oh", action='store_true')

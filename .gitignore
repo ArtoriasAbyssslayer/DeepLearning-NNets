@@ -15,5 +15,5 @@ Dataset/
 .vscode/
 ./Dataset/*
 Svm-Classification/experiments/Dataset/*
-
+data/
 
