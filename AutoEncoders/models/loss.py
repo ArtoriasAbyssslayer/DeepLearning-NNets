@@ -15,7 +15,7 @@ def recon_kld(recon_x, x, mu, logvar, input_type='None'):
     if input_type == 'bernoulli_input':
         # BCE loss
         # recon_loss = F.binary_cross_entropy_with_logits(recon_x, x.view(-1, 784), reduction='sum')
-        if(recon_x.shape == (32,1,28,28)):
+        if(recon_x.shape != (x.shape[0],784)):
             recon_loss = F.binary_cross_entropy_with_logits(recon_x, x)
         else:
             recon_loss = F.binary_cross_entropy_with_logits(recon_x, x.view(-1, 784))
@@ -23,7 +23,7 @@ def recon_kld(recon_x, x, mu, logvar, input_type='None'):
     elif input_type == 'gaussian_blurred_input':
         # Gaussian Reconstruction Loss 
         # recon_loss = F.mse_loss(recon_x,x.view(-1, 784),reduction='sum')
-        if(recon_x.shape == (32,1,28,28)):
+        if(recon_x.shape != (x.shape[0],784)):
             recon_loss = F.mse_loss(recon_x,x)
         else:
             recon_loss = F.mse_loss(recon_x,x.view(-1, 784))  # without reduction to let gradients handle the loss 
