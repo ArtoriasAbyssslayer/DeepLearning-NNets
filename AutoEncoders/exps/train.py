@@ -137,7 +137,7 @@ def train(network,batch_size,lr,trainloader,testloader,min_loss,optimizer,start_
     return kld_losses_buf,recon_losses_buf,losses_buf
 def net_builder(config):
     if config['model_name'] == 'Autoencoder':
-        net = Autoencoder(config)
+        net = Autoencoder.AutoEncoder(input_dim = 784,hidden_dim=config['hidden_size'],latent_dim=config['latent_size'],gaussian_blurred_input=config['data_masking'])
     elif config['model_name'] == 'VAE':
         if config['data_masking'] == 'bin-masking':
             net = VAE.VAE(input_dim = 784,e_hidden_dim=config['hidden_size'],latent_dim=config['latent_size'],bernoulli_input=config['data_masking'],gaussian_blurred_input=None)
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name","-m",default='VAE')
     parser.add_argument("--hidden_size","-hd",default=400,type=int)
-    parser.add_argument("--latent_size","-L",default=85,type=int)
+    parser.add_argument("--latent_size","-L",default=20,type=int)
     parser.add_argument("--data_masking","-t",default=None)
     parser.add_argument('--one_hot_labels',"-oh", action='store_true')
     parser.add_argument('--batch_size',"-b",type=int, default=32, metavar='N',help='input batch size for training (default: 32)')

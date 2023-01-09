@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-class DenseLayer(nn.Module):
+class DenseLayerPT(nn.Module):
     def __init__(self, in_features, n_nodes, bias=True, activation=None, dropout_rate=0):
         """
         in_features: Number of input features (int)
@@ -10,8 +10,7 @@ class DenseLayer(nn.Module):
         activation: Activation function to use (callable)
         dropout_rate: Dropout rate for nodes (float)
         """
-        super(DenseLayer, self).__init__()
-        
+        super(self).__init__()
         # Initialize weights and bias
         self.weight = nn.Parameter(torch.Tensor(n_nodes, in_features))
         if bias:

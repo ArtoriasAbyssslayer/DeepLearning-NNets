@@ -60,7 +60,7 @@ def load_mnist(batch_size=32, masking=None, one_hot_labels=False,workers=4):
         :return: train_DataLoader,test_DataLoader
     """
 	# data preporc
-    if masking == "guassian_maskin":
+    if masking == "guassian_masking":
         data_Transformer = transforms.Compose([
             ToTensor(), 
             GuassianBlurTransform(kernel_size=3, sigma=0.001)

@@ -1,6 +1,6 @@
 torch
+torchsummary
 torchvision
-torchaudio
 tensorflow
 seaborn
 pandas

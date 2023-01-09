@@ -5,7 +5,7 @@ import numpy as np
 # Pick Device to train the model
 import sys
 sys.path.append('models')
-from BasicLayers import DenseLayer
+import BasicLayers
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -15,13 +15,13 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 class AutoEncoder(nn.Module):
     def __init__(self,input_dim,hidden_dim=300,latent_dim=64,activation=F.relu,bernoulli_input=None,gaussian_blurred_input=None):
         self.input_dim = input_dim
-        self.encoding_dim = encoding_dim
+        self.latent_dim = latent_dim
         self.bernoulli_input = bernoulli_input
         self.gaussian_blurred_input = gaussian_blurred_input
         # input dim 784 we gradually descent this with 2 Dense Linear layers
-        self.encoder_l1 = DenseLayerPT(input_dim,hidden_dim,activation)
-        self.encoder_l2 = DenseLayerPT(hidden_dim,encoding_dim,activation)
-        self.decoder = DenseLayerPT(encoding_dim,input_dim,activation)
+        self.encoder_l1 = BasicLayers.DenseLayerPT(input_dim,hidden_dim,activation)
+        self.encoder_l2 = BasicLayers.DenseLayerPT(hidden_dim,latent_dim,activation)
+        self.decoder = BasicLayers.DenseLayerPT(latent_dim,input_dim,activation)
     def forward(self,X):
         self.X = X
         self.Z = self.encoder.forward(X)

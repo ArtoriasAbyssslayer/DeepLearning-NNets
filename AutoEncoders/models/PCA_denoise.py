@@ -1,3 +1,6 @@
+import sys
+import os 
+sys.path.append(os.getcwd())
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt 
@@ -7,6 +10,7 @@ from sklearn.decomposition import PCA
 import utils
 import visualization_utils
 import time 
+
 # Get the DataLoaders and load the images 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 def main(args):
@@ -73,7 +77,6 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=10, help='number of epochs to train for')
-    parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size')
     parser.add_argument('--n_components', type=int, default=[100,0.9,0.95], help='latent dimension')
     args = parser.parse_args()
