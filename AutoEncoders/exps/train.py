@@ -2,7 +2,6 @@ import argparse
 import sys
 import os 
 sys.path.append(os.getcwd())
-print(sys.path)
 import torch 
 import torch.optim as optim
 import torchvision

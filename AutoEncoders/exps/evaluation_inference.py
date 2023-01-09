@@ -3,12 +3,10 @@ import torch
 import numpy as np 
 import matplotlib.pyplot as plt
 import sys
-sys.path.__getattribute__('append')('models')
+import os 
+sys.path.append(os.getcwd())
 # Import model
-import Autoencoder
-import VAE
-import PCA_denoise
-import VAE_cnn
+from models import Autoencoder,VAE,VAE_cnn,PCA_denoise
 # Import utils')
 import utils
 import visualization_utils

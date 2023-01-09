@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 from scipy.stats import stats
 import torch
 from sklearn.decomposition import PCA
-from setuptools import setup, find_packages
-setup(name='AutoEncoders', version='1.0', packages=find_packages())
 import utils
 import visualization_utils
 import time 
