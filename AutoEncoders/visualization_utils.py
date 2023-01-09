@@ -36,38 +36,36 @@ def plot_pca_components(pca):
           i=i+1
      
 def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrain):
-     fig = plt.figure()
-     if isTrain: 
-          fig.suptitle('TRAINING LOSSES', fontsize=16)
-     else:
-          fig.suptitle('TESTING LOSSES', fontsize=16)
      if type == 'Autoencoder' or type == 'PCA':
-          ax2.set_title('Accumulated Loss')
-          ax2.set_xlabel('Epochs')
-          ax2.set_ylabel('Sum Loss')
-          plt.subplot(1,1,1)
-          plt.plot(np.arange(1,num_epochs+1),train_losses)
+          fig,ax1 = plt.subplots(1)
+          if isTrain: 
+               fig.suptitle('TRAINING LOSSES', fontsize=16)
+          else:
+               fig.suptitle('TESTING LOSSES', fontsize=16)
+          
+          ax1.set_title('Accumulated Loss')
+          ax1.set_xlabel('Epochs')
+          ax1.set_ylabel('Sum Loss')
+          ax1.plot(np.arange(1,num_epochs+1),train_losses)
           plt.show()
      else:
-          ax = plt.subplot(1,plt.figsize(10,10))
-          ax.set_title('Kullback–Leibler divergence Loss')
-          ax.set_xlabel('Epochs')
-          ax.set_ylabel('KLD')
-          plt.subplot(1,1,1)
-          plt.plot(np.arange(1,num_epochs+1),kld_losses)
-          ax2 = plt.subplot(2,plt.figsize(10,10))
+          fig,(ax1,ax2,ax3) = plt.subplots(1,3)
+          if isTrain: 
+               fig.suptitle('TRAINING LOSSES', fontsize=16)
+          else:
+               fig.suptitle('TESTING LOSSES', fontsize=16)
+          ax1.set_title('Kullback–Leibler divergence Loss')
+          ax1.set_xlabel('Epochs')
+          ax1.set_ylabel('KLD')
+          ax1.plot(np.arange(1,num_epochs+1),kld_losses)
           ax2.set_title('Reconstruction Loss')
           ax2.set_xlabel('Epochs')
           ax2.set_ylabel('Recon')
-          plt.subplot(1,2,1)
-          plt.plot(np.arange(1,num_epochs+1),recon_losses)
-          ax3 = plt.subplot(3,plt.figsize(10,10))
-          ax2 = plt.subplot(2,plt.figsize(10,10))
-          ax2.set_title('Accumulated Loss')
-          ax2.set_xlabel('Epochs')
-          ax2.set_ylabel('Sum Loss')
-          plt.subplot(1,3,1)
-          plt.plot(np.arange(1,num_epochs+1),train_losses)
+          ax2.plot(np.arange(1,num_epochs+1),recon_losses)
+          ax3.set_title('Accumulated Loss')
+          ax3.set_xlabel('Epochs')
+          ax3.set_ylabel('Sum Loss')
+          ax3.plot(np.arange(1,num_epochs+1),train_losses)
           plt.show()
 
 def plot_ae_outputs(encoder,decoder,test_dataset,n=10):
