@@ -4,7 +4,6 @@ import os
 sys.path.append(os.getcwd())
 import torch 
 import torch.optim as optim
-import torchvision
 import utils
 import visualization_utils
 from utils import adjust_learning_rate,clip_gradient,AverageMeter
@@ -13,7 +12,8 @@ import torch.backends.cudnn as cudnn
 import numpy as np
 from tqdm import tqdm
 import time
-import ssl 
+
+
 #### GLOBAL PARAMETERS ####
 cudnn.benchmark = True
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -35,17 +35,16 @@ grad_clip =  True
 
 ''' One Epoch Training Function '''
 def train_epoch(dataloader,model,optimizer):
-    input_size = len(dataloader.dataset)
     # Signal the model for training. This helps some specific layers such as BatchNorm,Dropout that operate
     # differently in training and evaluation/inference states
     model.train()
     # Initialize AveregeMeters
-
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter() # kld+recon losses buffer
     running_accuracies =  AverageMeter() # accuracy counting
     start_time = time.time()
+    batch_idx = 0
     for batch_idx,(data,target) in enumerate(dataloader):
         data,target = data.to(DEVICE),target.to(DEVICE)
         data_time.update(time.time() - start_time)
@@ -68,13 +67,14 @@ def train_epoch(dataloader,model,optimizer):
         if batch_idx%100 == 0:
             losses.update(sum_loss.item())
             batch_current =  batch_idx*len(data)
-            print('Current Batch\t' 
+            
+            print(f"Batch Progress: [{batch_current}/{len(dataloader.dataset)}]\t" 
                 'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                 'Data Time {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(batch_current/input_size, len(dataloader),
-                                                                batch_time=batch_time,
+                'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(batch_time=batch_time,
                                                                 data_time=data_time, loss=losses))
-        return sum_loss,losses
+    
+    return sum_loss,losses
 
 '''Test dataset one epoch eval'''
 def test_epoch(dataloader,model):
@@ -129,7 +129,7 @@ def train(network,batch_size,lr,trainloader,testloader,min_loss,optimizer,start_
 
         # Save model checkpoint  if it got better    
         if min_loss is None or  loss < min_loss:    
-            utils.save_model(network, optimizer,save_name) 
+            utils.save_model(network,min_loss,optimizer,save_name) 
             print('TRAINING FINISHED OPTIMAL MODEL SAVED')
         # Save Net as checkpoint if interaption
         utils.save_checkpoint(epoch, min_loss,network, optimizer,save_name=save_name)
@@ -181,8 +181,6 @@ def main(args):
             start_epoch = checkpoint['epoch'] + 1
             print('\n Loaded Checkpoint from epoch %d.\n'.format(start_epoch))
             min_loss = prams_buffer['test_loss'] if param_buffer != None else 0
-    
-    print(net)
     biases = list()
     not_biases = list()
     for param_name, param in net.named_parameters():
@@ -201,16 +199,17 @@ def main(args):
     else:
         print("Optimizer not supported")
     
+    '''print model summary'''
+    print(net)
+    # Train the model)
     '''load mnist'''
     train_loader,test_loader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],one_hot_labels=False,workers=4)
     '''train and eval model'''
-    print(start_epoch)
+    print("Starting from epoch:{}".format(start_epoch))
     training_toc = time.time()
     kld_losses,recon_losses,train_losses = train(net,config['batch_size'],config['lr'],train_loader,test_loader,min_loss,optimizer,start_epoch,config['num_epochs'],config['save_name'])
     training_tic = time.time()
-    '''save last model'''
-    save_model(net,optimizer,config['save_name'],start_epoch,min_loss)
-    print("---TRAINING FINISHED---\nElapsed Training Time{.4f}".format(training_tic-training_toc))
+    print("---TRAINING FINISHED---\nElapsed Training Time {:.3f}s".format(training_tic-training_toc))
     '''print reconstruction,vi losses arrays'''
     print(kld_losses)
     print(recon_losses)
