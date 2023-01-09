@@ -22,22 +22,21 @@ def main(args):
     
 
     for batch,(traindata,_) in enumerate(trainLoader):
-        traindata = data.to(DEVICE)
-        for i,components in enumearte(n_components):
+        #traindata = traindata.to(DEVICE) sklearn doesnt work in GPU
+        for i,components in enumerate(n_components):
             # Start timer
+            traindata = traindata.view(-1,784)
             start_time = time.time()
 
             # Initialize PCA model
             pca = PCA(n_components=components)
 
             # Fit model to traindata
-
-            pca = pca.fit(traindata)
-            
+            pca_fitted = pca.fit(traindata[i][:])
             # Encode using pca 
-            pca_tranformed = pca.transform(traindata)
+            pca.transform(pca_fitted)
             # Decode using pca
-            pca_inverse = pca.inverse_transform(pca_transformed)
+            pca_inverse = pca.inverse_transform(pca_fitted)
             # End timer
             end_time = time.time()
             # Print time taken
@@ -58,9 +57,10 @@ def main(args):
         # Start timer
         start_time = time.time()
         # Encode using pca 
-        pca_tranformed = pca.transform(testdata)
+        testdata = pca.fit(testdata)
+        pca.transform(testdata)
         # Decode using pca
-        pca_inverse = pca.inverse_transform(pca_transformed)
+        pca_inverse = pca.inverse_transform()
         # End timer
         end_time = time.time()
         # Print time taken
