@@ -24,7 +24,7 @@ def plot_image(img):
 
 def plot_pca_components(pca):
      fig = plt.figure()
-     fig.title('MNIST PRINCIPAL COMPONENTS')
+     fig.suptitle('MNIST PRINCIPAL COMPONENTS', fontsize=16)
      feature_dim = int(np.ceil(np.sqrt(pca.n_components_)))
      i = 1
      for c in pca.components_:
@@ -38,13 +38,14 @@ def plot_pca_components(pca):
 def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrain):
      fig = plt.figure()
      if isTrain: 
-          fig.title('TRAINING LOSSES')
+          fig.suptitle('TRAINING LOSSES', fontsize=16)
      else:
-          fig.title('TESTING LOSSES')
+          fig.suptitle('TESTING LOSSES', fontsize=16)
      if type == 'Autoencoder' or type == 'PCA':
           ax2.set_title('Accumulated Loss')
           ax2.set_xlabel('Epochs')
           ax2.set_ylabel('Sum Loss')
+          plt.subplot(1,1,1)
           plt.plot(np.arange(1,num_epochs+1),train_losses)
           plt.show()
      else:
@@ -52,17 +53,20 @@ def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrai
           ax.set_title('Kullback–Leibler divergence Loss')
           ax.set_xlabel('Epochs')
           ax.set_ylabel('KLD')
+          plt.subplot(1,1,1)
           plt.plot(np.arange(1,num_epochs+1),kld_losses)
           ax2 = plt.subplot(2,figsize(10,10))
           ax2.set_title('Reconstruction Loss')
           ax2.set_xlabel('Epochs')
           ax2.set_ylabel('Recon')
+          plt.subplot(1,2,1)
           plt.plot(np.arange(1,num_epochs+1),recon_losses)
           ax3 = plt.subplot(3,figsize(10,10))
           ax2 = plt.subplot(2,figsize(10,10))
           ax2.set_title('Accumulated Loss')
           ax2.set_xlabel('Epochs')
           ax2.set_ylabel('Sum Loss')
+          plt.subplot(1,3,1)
           plt.plot(np.arange(1,num_epochs+1),train_losses)
           plt.show()
 
