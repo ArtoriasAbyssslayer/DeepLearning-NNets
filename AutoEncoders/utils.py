@@ -188,13 +188,14 @@ def load_pca_model(model,model_name):
     print('Model loaded from '+savepath+model_name)
     return
 
-def save_model(model,optimizer,save_name):
+def save_model(model,min_loss,optimizer,save_name):
     if not os.path.exists(savepath):   
         os.mkdir(savepath)
     torch.save({
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'test_loss': loss,
+                'min_loss': min_loss,
             }, savepath+save_name)
     print("-Model Saved ....!")
 

@@ -76,7 +76,7 @@ def train_epoch(dataloader,model,optimizer):
                                                                 data_time=data_time, loss=losses))
         return sum_loss,losses
 
-
+'''Test dataset one epoch eval'''
 def test_epoch(dataloader,model):
     batches_num = len(dataloader)
     model.eval()
@@ -98,7 +98,7 @@ def test_epoch(dataloader,model):
                 losses.update(sum_loss.item())
     return klds.avg,recon_losses.avg,losses.avg
         
-#TODO - FUNCTION BELLOW
+
 '''Whole net train'''
 def train(network,batch_size,lr,trainloader,testloader,min_loss,optimizer,start_epoch,num_epochs,save_name):
     # moce  network to selected device
@@ -182,8 +182,6 @@ def main(args):
             print('\n Loaded Checkpoint from epoch %d.\n'.format(start_epoch))
             min_loss = prams_buffer['test_loss'] if param_buffer != None else 0
     
-    
-    
     print(net)
     biases = list()
     not_biases = list()
@@ -207,7 +205,12 @@ def main(args):
     train_loader,test_loader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],one_hot_labels=False,workers=4)
     '''train and eval model'''
     print(start_epoch)
+    training_toc = time.time()
     kld_losses,recon_losses,train_losses = train(net,config['batch_size'],config['lr'],train_loader,test_loader,min_loss,optimizer,start_epoch,config['num_epochs'],config['save_name'])
+    training_tic = time.time()
+    '''save last model'''
+    save_model(net,optimizer,config['save_name'],start_epoch,min_loss)
+    print("---TRAINING FINISHED---\nElapsed Training Time{.4f}".format(training_tic-training_toc))
     '''print reconstruction,vi losses arrays'''
     print(kld_losses)
     print(recon_losses)

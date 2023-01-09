@@ -49,20 +49,20 @@ def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrai
           plt.plot(np.arange(1,num_epochs+1),train_losses)
           plt.show()
      else:
-          ax = plt.subplot(1,figsize(10,10))
+          ax = plt.subplot(1,plt.figsize(10,10))
           ax.set_title('Kullback–Leibler divergence Loss')
           ax.set_xlabel('Epochs')
           ax.set_ylabel('KLD')
           plt.subplot(1,1,1)
           plt.plot(np.arange(1,num_epochs+1),kld_losses)
-          ax2 = plt.subplot(2,figsize(10,10))
+          ax2 = plt.subplot(2,plt.figsize(10,10))
           ax2.set_title('Reconstruction Loss')
           ax2.set_xlabel('Epochs')
           ax2.set_ylabel('Recon')
           plt.subplot(1,2,1)
           plt.plot(np.arange(1,num_epochs+1),recon_losses)
-          ax3 = plt.subplot(3,figsize(10,10))
-          ax2 = plt.subplot(2,figsize(10,10))
+          ax3 = plt.subplot(3,plt.figsize(10,10))
+          ax2 = plt.subplot(2,plt.figsize(10,10))
           ax2.set_title('Accumulated Loss')
           ax2.set_xlabel('Epochs')
           ax2.set_ylabel('Sum Loss')
@@ -71,7 +71,7 @@ def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrai
           plt.show()
 
 def plot_ae_outputs(encoder,decoder,test_dataset,n=10):
-    plt.figure(figsize=(16,4.5))
+    plt.figure(plt.figsize(16,4.5))
     targets = test_dataset.targets.numpy()
     t_idx = {i:np.where(targets==i)[0][0] for i in range(n)}
     for i in range(n):
