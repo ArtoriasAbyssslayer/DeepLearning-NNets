@@ -8,10 +8,10 @@ import loss
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 class VAE_cnn(nn.Module):
-    def __init__(self,input_dim,latent_size,bernoulli):
+    def __init__(self,latent_size,bernoulli):
         super(VAE_cnn,self).__init__()
         self.latent_size = latent_size
-        self.input_dim = input_dim
+        self.bernoulli = bernoulli
         if bernoulli:
             print("Constructing VAE basic model with bernoulli masked images")
         else:  

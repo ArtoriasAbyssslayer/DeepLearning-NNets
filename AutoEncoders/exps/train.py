@@ -147,9 +147,9 @@ def net_builder(config):
         net = utils.load_pca_model(model, config['model_name'])
     else:   # model_name = 'VAE_cnn'
         if config['data_masking'] == 'bin-masking':
-            net = VAE_cnn.VAE_cnn(args.input_dim,config['latent_size'],bernoulli=True)
+            net = VAE_cnn.VAE_cnn(config['latent_size'],bernoulli=True)
         else:
-            net = VAE_cnn.VAE_cnn(args.input_dim,config['latent_size'],bernoulli=False)
+            net = VAE_cnn.VAE_cnn(config['latent_size'],bernoulli=False)
     return net
 def main(args):
     global start_epoch,epoch,checkpoint,decay_lr_at,decay_lr_to
