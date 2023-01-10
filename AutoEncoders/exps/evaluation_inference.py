@@ -11,7 +11,7 @@ from models import Autoencoder,VAE,VAE_cnn,PCA_denoise
 import utils
 import visualization_utils
 from train import net_builder
-import tqdm
+from tqdm import tqdm
 
 ''' Select running device '''
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -29,39 +29,41 @@ def main(args):
     }
     
     if os.path.exists(args.model_name):
-        model = net_builder(config)
-        model.load_state_dict(checkpoint,strict=False)
-        
+
+        model = checkpoint['model']
+        # model.load_state_dict(checkpoint['state'],strict=False)
         model.to(device)
         model.eval()
         # Load data
-
-        _,test_Loader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],workers=4)
-        generated_imgs = np.zeros((args.samples_num))
     else :
         print("No pretrained model checkpoint found")
         return
     
-    _,testDataLoader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],one_hot_labels=False,workers=4)
+    # Load Dataset and Generate selected sample of MNIST Images with model function call 
+    _,testDataLoader = utils.load_mnist(batch_size=config['batch_size'],masking=config['data_masking'],workers=4)
     generated_imgs = np.zeros(((config['samples_num']+1),args.batch_size,28,28),dtype=float)
-    for data,_ in tqdm(enumerate(testDataLoader)):
+    for data,_ in testDataLoader:
         data = data.to(device)
-        generated_imgs[0] = data.reshape((args.batch_size,28,28)).cpu().detach().numpy()
+        data_reshaped = data.reshape((config['batch_size'],28,28)).cpu().detach().numpy()
+        generated_imgs[0] = data_reshaped
         mu,logvar = model.encode(data)
         # Generate samples of dataset
         for i in tqdm(range(args.samples_num)):
             generated_imgs[i+1]=model.generate(mu,logvar)
         break
 
-    random_image = model.generate_random_sample(args.samples_num)
-    random_image_2 = model.generate_next_sample(args.samples_num)
-    generated_samples = [random_image,random_image_2]
-    visualization_utils.numpy_to_gif(generated_samples)
-    generated_imgs = np.concatenate((generated_imgs,random_image,random_image_2),axis=0)
-    # Save generated images
 
-    visualization_utils.plot_ae_outputs(model.encode, model.decode, test_Loader.dataset.targets, config['batch_size'])
-    
+    #random_image = model.generate_random_sample(args.samples_num)
+    #random_image_2 = model.generate_next_sample(args.samples_num)
+    #generated_samples = [random_image,random_image_2]
+
+    # visualization_utils.make_gif(generated_samples)
+    #generated_imgs = np.concatenate((generated_imgs,random_image,random_image_2),axis=2)
+    # print(generated_imgs.shape)
+    # Save generated images
+    visualization_utils.plot_ae_outputs(model,model.encode, model.decode, testDataLoader.dataset, config['samples_num'])
+    visualization_utils.plot_image(generated_imgs)
+    visualization_utils.gif(config['model_name']+"generated_imgs.gif",generated_imgs)
 
 
 if __name__ == '__main__':

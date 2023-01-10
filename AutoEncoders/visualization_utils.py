@@ -1,26 +1,80 @@
 import imageio
 import os
+from moviepy.editor import ImageSequenceClip
 import numpy as np
 import cv2 as cv 
 import matplotlib.pyplot as plt
+import glob
+from PIL import Image
+import torch
 def outputs_to_gif(filenames):
-     filenames=os.listdir()
-     images = []
-     for filename in filenames:
-          images.append(imageio.imread(filename))
-     imageio.mimsave('movie.gif', images)
-def numpy_to_gif(array):
-     images = []
-     for i in range(array.shape[0]):
-          images.append(array[i])
-     imageio.mimsave('movie.gif', images)
+     if filenames==os.listdir():
+          images = []
+          for filename in filenames:
+               images.append(imageio.imread(filename))
+          imageio.mimsave('movie.gif', images)
+     else:
+          imageio.mimsave('movie.gif',filenames)
 
-def plot_image(img):
+def gif(filename, array, fps=10, scale=1.0):
+    """Creates a gif given a stack of images using moviepy
+    Notes
+    -----
+    works with current Github version of moviepy (not the pip version)
+    https://github.com/Zulko/moviepy/commit/d4c9c37bc88261d8ed8b5d9b7c317d13b2cdf62e
+    Usage
+    -----
+    >>> X = randn(100, 64, 64)
+    >>> gif('test.gif', X)
+    Parameters
+    ----------
+    filename : string
+        The filename of the gif to write to
+    array : array_like
+        A numpy array that contains a sequence of images
+    fps : int
+        frames per second (default: 10)
+    scale : float
+        how much to rescale each image by (default: 1.0)
+    """
+
+    # ensure that the file has the .gif extension
+    fname, _ = os.path.splitext(filename)
+    filename = fname + '.gif'
+
+    # copy into the color dimension if the images are black and white
+    if array.ndim == 3:
+        array = array[..., np.newaxis] * np.ones(3)
+
+    # make the moviepy clip
+    clip = ImageSequenceClip(list(array), fps=fps).resize(scale)
+    clip.write_gif(filename, fps=fps)
+    return clip
+def make_gif(imgs):
+     # frames = [Image.open(image) for image in glob.glob(f"{frame_folder}/*")] 
+     # frames = np.zeros((imgs.shape[0]*imgs.shape[1]+imgs.shape[1],(28,28)))
+     for i in range(imgs.shape[0]):
+        for j in range(imgs.shape[1]):
+               img = imgs[i,j]
+               idx = i*imgs.shape[1]+j 
+               frames = Image.fromarray((img* 255).astype(np.uint8))
+               frame_one = frames[0]
+               frame_one.save("gen.gif", format="GIF", append_images=frames,save_all=True, duration=1000, loop=1)
+
+def plot_image(imgs):
      fig = plt.figure()
      plt.subplots_adjust(wspace=0, hspace=0)
-     cv.imshow('image',img)
-     cv.waitKey(0)
-     cv.destroyAllWindows()
+     for i in range(imgs.shape[0]):
+        for j in range(imgs.shape[1]):
+            img = imgs[i,j]
+            idx = i*imgs.shape[1]+j
+            ax = fig.add_subplot(imgs.shape[0], imgs.shape[1], idx+1)
+            ax.get_yaxis().set_visible(False)
+            ax.get_xaxis().set_visible(False)
+            ax.set_axis_off()
+            ax.imshow(255*img, cmap='gray_r')
+     plt.show()
+
 
 def plot_pca_components(pca):
      fig = plt.figure()
@@ -68,24 +122,25 @@ def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrai
           ax3.plot(np.arange(1,num_epochs+1),train_losses)
           plt.show()
 
-def plot_ae_outputs(encoder,decoder,test_dataset,n=10):
-    plt.figure(plt.figsize(16,4.5))
+def plot_ae_outputs(model,encoder,decoder,test_dataset,n=10):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    plt.figure()
     targets = test_dataset.targets.numpy()
     t_idx = {i:np.where(targets==i)[0][0] for i in range(n)}
     for i in range(n):
       ax = plt.subplot(2,n,i+1)
       img = test_dataset[t_idx[i]][0].unsqueeze(0).to(device)
-      encoder.eval()
-      decoder.eval()
       with torch.no_grad():
-         rec_img  = decoder(encoder(img))
+          rec_img,_,_  = model(img) # instead of running decode(encode(img)) run forward call
       plt.imshow(img.cpu().squeeze().numpy(), cmap='gist_gray')
       ax.get_xaxis().set_visible(False)
       ax.get_yaxis().set_visible(False)  
       if i == n//2:
         ax.set_title('Original images')
       ax = plt.subplot(2, n, i + 1 + n)
-      plt.imshow(rec_img.cpu().squeeze().numpy(), cmap='gist_gray')  
+      rec_img = rec_img.cpu()
+      rec_img=np.reshape(rec_img,(1,28,28))
+      plt.imshow(rec_img.squeeze().numpy(), cmap='gist_gray')  
       ax.get_xaxis().set_visible(False)
       ax.get_yaxis().set_visible(False)  
       if i == n//2:

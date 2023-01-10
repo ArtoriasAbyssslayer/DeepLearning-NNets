@@ -85,13 +85,32 @@ class VAE_cnn(nn.Module):
             if isinstance(m,nn.Linear):
                 nn.init.xavier_uniform_(m.weight)
                 nn.init.constant_(m.bias,0)
+    
 
-    def forward(self,X):
+    def encode(self,X):
         enc = self.encoder_cnn(X)
         x_flat = self.flatten(enc)
         h = self.encoder_lin(x_flat)
         mu = self.fc_mu(h)
         logs2 = self.fc_logs2(h)
+        z = self.reparameterize(mu, logs2)
+        return mu,logs2
+
+
+    def decode(self,z):
+        x_hat = self.decoder_lin(z)
+        x_hat_unflat = self.unflatten(x_hat)
+        decoded = self.decoder_cnn(x_hat_unflat)
+        return decoded
+
+    def forward(self,X):
+        # encode 
+        enc = self.encoder_cnn(X)
+        x_flat = self.flatten(enc)
+        h = self.encoder_lin(x_flat)
+        mu = self.fc_mu(h)
+        logs2 = self.fc_logs2(h)
+        # decode 
         z = self.reparameterize(mu, logs2)
         x_hat = self.decoder_lin(z)
         x_hat_unflat = self.unflatten(x_hat)
@@ -117,26 +136,39 @@ class VAE_cnn(nn.Module):
         with torch.no_grad():
                 
             z = torch.randn((n_images, self.latent_size), dtype = torch.float,device=device)
-            samples =  self.decoder(z)
+            samples =  self.decode(z)
             return self.tensor_to_numpyImg(samples)
     
     def generate_next_sample(self,n_images):
         with torch.no_grad():
             z = torch.randn((n_images+1),self.latent_size, dtype = torch.float,device=device)
-            samples =  self.decoder(z)
+            samples =  self.decode(z)
             return self.tensor_to_numpyImg(samples)
 
     def tensor_to_numpyImg(self,tensor):
         bin = self.bernoulli
         if bin:
-            recon_bin = (img > 0.5).to(img.dtype).reshape(img.size(0),28,28).cpu().detach().numpy()
+            recon_bin = (tensor > 0.5).to(tensor.dtype).reshape(tensor.size(0),28,28).cpu().detach().numpy()
             return recon_bin
         else:
-            recon_gas = img.reshape(img.size(0),28,28).cpu().detach().numpy()
+            recon_gas = tensor.reshape(tensor.size(0),28,28).cpu().detach().numpy()
             return recon_gas
     
     
-    
+    def generate_next_random_interpolate(self, n, n_interpolated):
+        with torch.no_grad():
+            z = torch.randn((n+1, self.latent_size), device=device)
+            zs = torch.zeros(n*n_interpolated, self.latent_size, device=device)
+            for i in range(n):
+                #k=0
+                for l in range(n_interpolated):
+                    zs[i*n_interpolated+l] = z[i+1]
+                    # zs[i*n_interpolated+l] = (1-k)*z[i]+k*z[i+1]
+                    # k += 1.0/n_interpolated
+
+            dec = self.decoder(zs)
+            return self.tensor_to_numpyImg(dec)
+
     def loss_function(self,recon_x,x,mu,logvar):
         if self.bernoulli:
             return loss.recon_kld(recon_x,x,mu,logvar,input_type='bernoulli_input')

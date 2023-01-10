@@ -80,6 +80,7 @@ def train_epoch(dataloader,model,optimizer):
 def test_epoch(dataloader,model):
     batches_num = len(dataloader)
     model.eval()
+    model.to(DEVICE)
     losses = AverageMeter()
     klds = AverageMeter()
     recon_losses = AverageMeter()
