@@ -11,7 +11,7 @@ from models import Autoencoder,VAE,VAE_cnn,PCA_denoise
 import utils
 import visualization_utils
 from train import net_builder
-
+import tqdm
 
 ''' Select running device '''
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -23,35 +23,34 @@ def main(args):
     config = {
         'batch_size':args.batch_size,
         'data_masking': args.data_masking,
-        'save_name':args.save_name,
         'model_name':args.model_name,
         'latent_size':args.latent_size,
-        'one_hot':args.one_hot_labels,
-        'hidden_size':args.hidden_size
+        'samples_num':args.samples_num
     }
-    if os.path.exists(checkpoint):
+    
+    if os.path.exists(args.model_name):
         model = net_builder(config)
-        model.load_state_dict(checkpoint['state_dict'])
+        model.load_state_dict(checkpoint,strict=False)
+        
         model.to(device)
         model.eval()
         # Load data
 
-        train_Loader,test_Loader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],one_hot_labels=['one_hot'],workers=4)
-        generated_imgs = np.zeros((args.sample))
+        _,test_Loader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],workers=4)
+        generated_imgs = np.zeros((args.samples_num))
     else :
         print("No pretrained model checkpoint found")
         return
     
-    trainDataLoader,testDataLoader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],one_hot_labels=['one_hot'],workers=4)
-    
-    generated_imgs = np.zeros((args.samples_num+1),args.batch_size,28,28)
-    for data,_ in tqdm(test_DataLoader):
+    _,testDataLoader = utils.load_mnist(config.get('batch_size'),masking=config['data_masking'],one_hot_labels=False,workers=4)
+    generated_imgs = np.zeros(((config['samples_num']+1),args.batch_size,28,28),dtype=float)
+    for data,_ in tqdm(enumerate(testDataLoader)):
         data = data.to(device)
         generated_imgs[0] = data.reshape((args.batch_size,28,28)).cpu().detach().numpy()
         mu,logvar = model.encode(data)
         # Generate samples of dataset
         for i in tqdm(range(args.samples_num)):
-            generated_images[i+1]=model.generate(mu,logvar)
+            generated_imgs[i+1]=model.generate(mu,logvar)
         break
 
     random_image = model.generate_random_sample(args.samples_num)
@@ -67,10 +66,10 @@ def main(args):
 
 if __name__ == '__main__':
     parser =  argparse.ArgumentParser()
-    parser.add_argument("--model_name","-m",default="VAE.ptr")
+    parser.add_argument("--model_name","-m",default="./saved_models/bernoulli_input/checkpoint_VAE.ptr")
     parser.add_argument("--latent_size","-L",default=85,type=int)
     parser.add_argument("--data_masking","-t",default=None)
-    parser.add_argument("--batch_size","-b")
+    parser.add_argument("--batch_size","-b",default=32,type=int)
     parser.add_argument("--samples_num","-s",default=10,type=int)
     args = parser.parse_args()
     main(args)

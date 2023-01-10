@@ -22,10 +22,9 @@ class GuassianBlurTransform(object):
 		self.kernel_size =  kernel_size
 		self.sigma = sigma
 	def __call__(self,x):
-		guassian_blur = transforms.GaussianBlur(kernel_size,sigma)
+		guassian_blur = transforms.GaussianBlur(self.kernel_size,self.sigma)
 		blurred_img = guassian_blur(x)
 		return blurred_img
-
 """
     Create a Threshold Transformer in order to 
     Nomralize images so that Letter Details Preserved (above 0.5 brightness -> 1 else 0)
@@ -123,30 +122,6 @@ def adjust_learning_rate(optimizer, scale):
     for param_group in optimizer.param_groups:
         param_group['lr'] = param_group['lr'] * scale
     print("DECAYING learning rate.\n The new LR is %f\n" % (optimizer.param_groups[1]['lr'],))
-    # Define a more minimalistic version of evaluation
-def testAccuracy(model,testloader):
-    model.eval()
-    classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-    dataiters = load_cifar10_iterators()
-
-    test_loader = dataiters[1]
-    
-    accuracy = 0.0
-    total = 0.0
-    with torch.no_grad(): # No need to calculate gradients for testing purposes
-        for data in test_loader:
-            images, labels = data
-            # run the model on the test set to predict labels
-            outputs = model(images)
-            # the label with the highest energy will be our prediction
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            accuracy += (predicted == labels).sum().item()
-
-    # compute the accuracy over all test images
-    accuracy = (100 * accuracy / total)
-    return(accuracy)
 class AverageMeter(object):
     """
     Keeps track of most recent, average, sum, and count of a metric.
@@ -194,7 +169,7 @@ def save_model(model,min_loss,optimizer,save_name):
     torch.save({
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
-                'test_loss': loss,
+                'test_loss': min_loss,
                 'min_loss': min_loss,
             }, savepath+save_name)
     print("-Model Saved ....!")
