@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import glob
 from PIL import Image
 import torch
+
 def outputs_to_gif(filenames):
      if filenames==os.listdir():
           images = []
@@ -77,17 +78,20 @@ def plot_image(imgs):
 
 
 def plot_pca_components(pca):
-     fig = plt.figure()
+     
+     feature_dim = int(np.ceil(np.sqrt(pca.n_components)))
+     fig,ax = plt.subplots(feature_dim, feature_dim, figsize=(10, 10))
      fig.suptitle('MNIST PRINCIPAL COMPONENTS', fontsize=16)
-     feature_dim = int(np.ceil(np.sqrt(pca.n_components_)))
      i = 1
      for c in pca.components_:
           img = 255*np.reshape(c,(28,28))
-          subplot = fig.add_subplot(feature_dim,feature_dim,i)
           ax.get_yaxis().set_visible(False)
           ax.get_xaxis().set_visible(False)
-          subplot.imshow(img)
+          ax.imshow(img)
           i=i+1
+     plt.show()
+
+
      
 def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrain):
      if type == 'Autoencoder' or type == 'PCA':

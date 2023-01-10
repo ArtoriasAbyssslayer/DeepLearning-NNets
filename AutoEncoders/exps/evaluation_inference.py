@@ -68,7 +68,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser =  argparse.ArgumentParser()
-    parser.add_argument("--model_name","-m",default="./saved_models/bernoulli_input/checkpoint_VAE.ptr")
+    parser.add_argument("--model_name","-m",default="./saved_models/checkpoint_VAE.ptr")
     parser.add_argument("--latent_size","-L",default=85,type=int)
     parser.add_argument("--data_masking","-t",default=None)
     parser.add_argument("--batch_size","-b",default=32,type=int)

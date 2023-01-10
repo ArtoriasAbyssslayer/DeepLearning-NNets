@@ -6,7 +6,8 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 import torch.nn.functional as F
 import torch 
- # TODO FINISH THE LOADERS FOR MNIST
+from joblib import dump
+
 '''Data Loading Utility Functions'''
 
 
@@ -31,10 +32,10 @@ class GuassianBlurTransform(object):
 """
 
 class ThresholdMaskTransform(object):
-	def __init__(self, thr):
-		self.thr = thr 
-	def __call__(self,x):
-		return (x > self.thr).to(x.dtype('float32')) 
+    def __init__(self, thr):
+        self.thr = thr 
+    def __call__(self,x):
+        return (x > self.thr).to(x.dtype)
 
 '''Label Transform'''
 labels=['0','1','2','3','4','5','6','7','8','9']
@@ -154,7 +155,7 @@ savepath = './saved_models/'
 def save_pca_model(model,model_name):
     if not os.path.exists(savepath):
         os.makedirs(savepath)
-    torch.save(model.state_dict(), savepath+model_name)
+    dump(model, savepath+model_name+'.joblib')
     print('Model saved to '+savepath+model_name)
     return
 
