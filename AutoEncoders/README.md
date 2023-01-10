@@ -1,6 +1,14 @@
 # AutoEncoder Models
 #### AutoEncoders on MNIST dataset
 
+Samples generation
+
+![pca_denoised](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/PCA_denoised.png)
+
+False generation
+
+![false_gen_vae](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/bin_masking_VAE_100epoch_reconstruction.png)
+
 This repository consists of varius types of encoding models in the hommonymous folder which are:
 * [models/Autoencoder.py](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/models/Autoencoder.py) := Simple AE model using simple reconstruction Loss
 * [models/VAE.py](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/models/VAE.py) := Linear Variational Autoencoder model using VI formulation i.e. KLD loss added to reconstruction loss
