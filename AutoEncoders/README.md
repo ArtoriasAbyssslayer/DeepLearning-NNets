@@ -3,11 +3,14 @@
 
 Samples generation
 
-![pca_denoised](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/PCA_denoised.png)
+![<img src="PCA_denoised.png" width="250"/>](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/PCA_denoised.png)
 
 False generation
 
-![false_gen_vae](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/bin_masking_VAE_100epoch_reconstruction.png)
+![<img src="bin_masking_VAE_100epoch_reconstruction.png" width="250"/>](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/bin_masking_VAE_100epoch_reconstruction.png)
+
+Good denoising example 
+![<img src="PCA_denoised_154.png" width="250"/>](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/PCA_denoised_154.png)
 
 This repository consists of varius types of encoding models in the hommonymous folder which are:
 * [models/Autoencoder.py](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/models/Autoencoder.py) := Simple AE model using simple reconstruction Loss
