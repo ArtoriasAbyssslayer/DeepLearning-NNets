@@ -5,7 +5,7 @@ Demonstration AE:
 IN:
 ![In](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/in.gif)
 OUT:
-![out](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/out.gif)
+![Generated](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/out.gif)
 
 
 PCA denoise with 44 components
