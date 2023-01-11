@@ -1,6 +1,11 @@
 # AutoEncoder Models
 #### AutoEncoders on MNIST dataset
+Demonstration AE:
 
+IN:
+![In](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/in.gif)
+OUT:
+![out](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/out.gif)
 Samples generation
 <img src="https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/PCA_denoised.png" width="400" height="400"/>
 
