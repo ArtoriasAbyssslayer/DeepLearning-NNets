@@ -4,7 +4,7 @@ Demonstration AE:
 
 IN:
 ![In](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/in.gif)
-OUT:
+GENERATED:
 ![Generated](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/out.gif)
 
 
