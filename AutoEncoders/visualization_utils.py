@@ -64,7 +64,7 @@ def animate_imgs(imgs, filename='image_generation.gif'):
         aximg.set_array(255*imgs[i])
         return aximg,
 
-    ani = FuncAnimation(fig, update, frames=imgs.shape[0], interval=40, blit=True)
+    ani = FuncAnimation(fig, update, frames=imgs.shape[0], interval=100, blit=True)
     ani.save(filename=filename)
     plt.show()
 def make_gif(imgs):
