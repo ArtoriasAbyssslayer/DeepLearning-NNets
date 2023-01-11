@@ -21,7 +21,7 @@ Also there are experiment scripts consist of::
 * exps/train.py := universal model train script using cmd-line-args and a praser that provides info with -h
 Example training:
 
-``` python exps/train.py  -m VAE -t "bin-masking" -s VAE.ptr ```
+``` python .\exps\train.py -m VAE -t 'bin_masking' -s VAE.ptr -hd 300 -L 85r ```
 
 script usage:
 ```
