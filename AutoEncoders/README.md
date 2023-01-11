@@ -59,7 +59,10 @@ options:
   --latent_size LATENT_SIZE, -L LATENT_SIZE
   --data_masking DATA_MASKING, -t DATA_MASKING
   --batch_size BATCH_SIZE, -b BATCH_SIZE
-  --samples_num SAMPLES_NUM, -s SAMPLES_NUM ```
+  --samples_num SAMPLES_NUM, -s SAMPLES_NUM  
+ ```
+ 
+ 
  
  False generation
 <img src="https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/bin_masking_VAE_100epoch_reconstruction.png" width="400" height="400"/>
