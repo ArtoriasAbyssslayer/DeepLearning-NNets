@@ -6,7 +6,11 @@ IN:
 ![In](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/in.gif)
 OUT:
 ![out](https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/out.gif)
-Samples generation
+
+
+PCA denoise with 44 components
+
+
 <img src="https://github.com/ArtoriasAbyssslayer/DeepLearning-NNets/blob/master/AutoEncoders/Results/PCA_denoised.png" width="400" height="400"/>
 
 
