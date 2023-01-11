@@ -153,21 +153,6 @@ class VAE_cnn(nn.Module):
         else:
             recon_gas = tensor.reshape(tensor.size(0),28,28).cpu().detach().numpy()
             return recon_gas
-    
-    
-    def generate_next_random_interpolate(self, n, n_interpolated):
-        with torch.no_grad():
-            z = torch.randn((n+1, self.latent_size), device=device)
-            zs = torch.zeros(n*n_interpolated, self.latent_size, device=device)
-            for i in range(n):
-                #k=0
-                for l in range(n_interpolated):
-                    zs[i*n_interpolated+l] = z[i+1]
-                    # zs[i*n_interpolated+l] = (1-k)*z[i]+k*z[i+1]
-                    # k += 1.0/n_interpolated
-
-            dec = self.decoder(zs)
-            return self.tensor_to_numpyImg(dec)
 
     def loss_function(self,recon_x,x,mu,logvar):
         if self.bernoulli:
