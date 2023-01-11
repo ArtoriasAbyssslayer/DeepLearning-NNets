@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import glob
 from PIL import Image
 import torch
+from matplotlib.animation import FuncAnimation
 
 def outputs_to_gif(filenames):
      if filenames==os.listdir():
@@ -51,6 +52,21 @@ def gif(filename, array, fps=10, scale=1.0):
     clip = ImageSequenceClip(list(array), fps=fps).resize(scale)
     clip.write_gif(filename, fps=fps)
     return clip
+
+def animate_imgs(imgs, filename='image_generation.gif'):
+    fig, ax = plt.subplots(figsize=(2,2))
+    fig.tight_layout(pad=0.05)
+    ax.get_yaxis().set_visible(False)
+    ax.get_xaxis().set_visible(False)
+    aximg = ax.imshow(255*imgs[0], cmap='gray', animated=True)
+
+    def update(i):
+        aximg.set_array(255*imgs[i])
+        return aximg,
+
+    ani = FuncAnimation(fig, update, frames=imgs.shape[0], interval=40, blit=True)
+    ani.save(filename=filename)
+    plt.show()
 def make_gif(imgs):
      # frames = [Image.open(image) for image in glob.glob(f"{frame_folder}/*")] 
      # frames = np.zeros((imgs.shape[0]*imgs.shape[1]+imgs.shape[1],(28,28)))
@@ -94,7 +110,7 @@ def plot_pca_components(pca):
 
      
 def plot_loss_curves(kld_losses,recon_losses,train_losses,num_epochs,type,isTrain):
-     if type == 'Autoencoder' or type == 'PCA':
+     if type == 'AutoEncoder' or type == 'PCA':
           fig,ax1 = plt.subplots(1)
           if isTrain: 
                fig.suptitle('TRAINING LOSSES', fontsize=16)

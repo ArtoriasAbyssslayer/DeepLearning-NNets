@@ -46,10 +46,16 @@ def main(args):
         data = data.to(device)
         data_reshaped = data.reshape((config['batch_size'],28,28)).cpu().detach().numpy()
         generated_imgs[0] = data_reshaped
-        mu,logvar = model.encode(data)
+        if model.__class__.__name__ == 'AutoEncoder':
+            code = model.encode(data)
+        else:
+            mu,logvar = model.encode(data)
         # Generate samples of dataset
         for i in tqdm(range(args.samples_num)):
-            generated_imgs[i+1]=model.generate(mu,logvar)
+            if model.__class__.__name__ == 'AutoEncoder':
+                generated_imgs[i+1] =  model.generate(code)
+            else:
+                generated_imgs[i+1]=model.generate(mu,logvar)
         break
 
 
@@ -63,12 +69,16 @@ def main(args):
     # Save generated images
     visualization_utils.plot_ae_outputs(model,model.encode, model.decode, testDataLoader.dataset, config['samples_num'])
     visualization_utils.plot_image(generated_imgs)
-    visualization_utils.gif(config['model_name']+"generated_imgs.gif",generated_imgs)
+    print(generated_imgs.shape)
+    k = generated_imgs.reshape(352,28,28)
+    visualization_utils.animate_imgs(k[0:31,:],"in.gif")
+    visualization_utils.animate_imgs(k[33:66,:],"out.gif")
+
 
 
 if __name__ == '__main__':
     parser =  argparse.ArgumentParser()
-    parser.add_argument("--model_name","-m",default="./saved_models/checkpoint_VAE.ptr")
+    parser.add_argument("--model_name","-m",default="./saved_models/checkpoint_AutoEncoder.ptr")
     parser.add_argument("--latent_size","-L",default=85,type=int)
     parser.add_argument("--data_masking","-t",default=None)
     parser.add_argument("--batch_size","-b",default=32,type=int)

@@ -49,9 +49,10 @@ def train_epoch(dataloader,model,optimizer):
         data,target = data.to(DEVICE),target.to(DEVICE)
         data_time.update(time.time() - start_time)
         dec, mu, logs2 = model(data)
+
         # Add also the input transformation type to the loss function
-        if(model.__class__.__name__=='Autoencoder'):
-            sum_loss = model.rec_loss()
+        if(model.__class__.__name__=='AutoEncoder'):
+            sum_loss = model.rec_loss(data)
         else:
             kld_loss,recon_loss,sum_loss = model.loss_function(dec,data,mu,logvar=logs2)
         # Clip gradients, if we observe this is needed
@@ -89,8 +90,8 @@ def test_epoch(dataloader,model):
         for batch_idx,(data,target) in enumerate(dataloader):
             data,target = data.to(DEVICE),target.to(DEVICE)
             dec, mu, logs2 = model(data)
-            if(model.__class__.__name__=='Autoencoder'):
-                sum_loss = model.rec_loss()
+            if(model.__class__.__name__=='AutoEncoder'):
+                sum_loss = model.rec_loss(data)
                 recon_losses.update(sum_loss.item())
             else:
                 kld_loss,recon_loss,sum_loss = model.loss_function(dec,data,mu,logvar=logs2)
